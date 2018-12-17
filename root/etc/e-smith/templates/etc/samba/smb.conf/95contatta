@@ -1,0 +1,14 @@
+[contatta]
+path = /var/spool/asterisk/monitor
+comment = Astering Recordings
+read only            = no
+inherit permissions  = yes
+create mask          = 0664
+store dos attributes = yes
+map archive          = no
+map readonly         = no
+inherit acls         = yes
+map acl inherit      = yes
+guest ok             = yes
+browseable           = yes
+

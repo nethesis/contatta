@@ -1,0 +1,13 @@
+{
+use NethServer::Password;
+our $pass = NethServer::Password::store('contatta');
+
+'';
+}
+
+$config = [
+    'settings' => [
+        'secretkey' => '{{ $pass }}',
+    ],
+];
+

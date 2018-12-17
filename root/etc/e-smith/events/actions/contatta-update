@@ -1,0 +1,31 @@
+#!/bin/bash
+mysql_password=$(perl -mNethServer::Password -e "print NethServer::Password::store('mysql')")
+
+# Functions
+
+function fbx_query {
+    mysql -uroot -p$mysql_password asterisk -B --silent -e "$1"
+}
+
+
+# Create rest module sql tables
+for i in $(ls /var/www/html/freepbx/contatta/sql/*.sql); do
+    mysql -uroot -p$mysql_password asterisk < ${i}
+done
+
+# Install FreePBX module
+modules_dir='/var/www/html/freepbx/admin/modules/'
+m='/usr/src/contatta/modules/contatta.tar.gz'
+filename=$(basename "$m")
+name="${filename%.tar.gz}"
+
+if [ ! -d $modules_dir$name ]; then
+    mkdir -p $modules_dir$name
+else
+    rm -fr $modules_dir$name/*
+fi
+tar xf $m -C $modules_dir$name --strip-components 1
+chown -R asterisk:asterisk $modules_dir$name
+
+/usr/bin/scl enable rh-php56 '/usr/sbin/fwconsole moduleadmin install contatta'
+

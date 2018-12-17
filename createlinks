@@ -1,0 +1,19 @@
+#!/usr/bin/perl -w
+
+use esmith::Build::CreateLinks qw(:all);
+my $event = 'contatta-update';
+
+event_actions($event, qw(
+    initialize-default-databases 00
+    contatta-update 60
+));
+
+event_templates($event, qw(
+    /var/www/html/freepbx/contatta/config.inc.php
+    /etc/samba/smb.conf
+));
+
+
+event_services($event, qw(
+   smb reload
+));
