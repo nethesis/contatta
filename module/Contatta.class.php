@@ -104,7 +104,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
             $ext->add($context, $exten, 'altaaffidabilita', new \ext_agi('agi://'.$agiip2));
 
             //Stanza di conference
-            $exten = '85000';
+            $exten = '85000.';
             $ext->add($context, $exten, '', new \ext_noop('conference'));
             $ext->add($context, $exten, '', new \ext_answer(''));
             $ext->add($context, $exten, '', new \ext_noop('amministratore exten: ${EXTEN}'));
