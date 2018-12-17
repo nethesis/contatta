@@ -15,36 +15,33 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: .\n"
 
-msgid "Blind transfer callback"
-msgstr "Ritorno del trasferimento cieco"
+msgid "Contatta Configuration"
+msgstr "Configurazione Contatta"
 
-msgid "Enable or disable blind transfer callback"
-msgstr "Abilita o disabilita il ritorno del trasferimento cieco"
+msgid "AGI IP 1"
+msgstr "IP AGI 1"
 
-msgid "Timeout for blind transfered calls before they are returned to transferer"
-msgstr "Timeout prima che una chiamata trasferita torni al mittente se non risposta"
+msgid "AGI IP 2"
+msgstr "IP AGI 2"
 
-msgid "Caller ID"
-msgstr "ID Chiamante"
+msgid "First AGI Server IP"
+msgstr "IP del primo server AGI"
 
-msgid "String to use as Caller ID for calls that return to transferer. ${xfer_exten} and ${CALLERID(name)} are variables replaced with extension returning the call and caller name"
-msgstr "La stringa che verrà mostrata per le chiamate trasferite che tornano al mittente. ${xfer_exten} e ${CALLERID(name)} sono le variabili sostituite con l'interno da cui la chiamata torna ed il nome del chiamante"
+msgid "AGI Backup Server IP"
+msgstr "IP del server AGI di backup"
 
-msgid "Alertinfo"
-msgstr ""
+msgid "Select MONITOR script"
+msgstr "Selezionare il comando da usare per il comando Monitor"
 
-msgid "Use a different alertinfo for calls that return to transferer"
-msgstr "Usa una suoneria diversa per le chiamate che tornano"
+msgid "Enable AMI user"
+msgstr "Abilita AMI"
 
-msgid "Return on Blind Transfer Options"
-msgstr "Opzioni per il ritorno delle chiamate su trasferimento cieco"
+msgid "Enable or disable AMI user for Polycom on-demand registration"
+msgstr "Abilita o disabilita l'utente AMI per la registrazione on-demand dei Polycom"
 
-msgid "Enabled"
-msgstr "Abilitato"
+msgid "AMI Password"
+msgstr "Password AMI"
 
-msgid "Yes"
-msgstr "Sì"
-
-msgid "No"
-msgstr ""
+msgid "AMI password for Polycom on-demand registration"
+msgstr "Password AMI per l'utente per la registrazione on-demand dei Polycom"
 
