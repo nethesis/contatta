@@ -30,9 +30,9 @@
         </div>
         <div class="col-md-9">
           <select class="form-control" id="monitorexec" name="monitorexec">
-          <?php $monitors = array('monitor_1', 'monitor_2', 'monitor_3', 'monitor_4')?>
-          <?php foreach($monitors as $monitor) {?>
-              <option value="<?php echo $monitor?>" <?php echo ($monitor == $settings['monitorexec']) ? 'SELECTED': ''?>><?php echo $monitor?></option>
+          <?php $monitors = array('2wav2mp3'=>'/var/lib/asterisk/bin/2wav2mp3')?>
+          <?php foreach($monitors as $name => $script) {?>
+              <option value="<?php echo $script?>" <?php echo ($script == $settings['monitorexec']) ? 'SELECTED': ''?>><?php echo $name?></option>
           <?php } ?>
           </select>
         </div>

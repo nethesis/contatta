@@ -1,0 +1,77 @@
+#!/bin/sh
+# 2wav2mp3 - create stereo mp3 out of two mono wav-files
+# source files will be deleted
+#
+# 2005 05 23 dietmar zlabinger http://www.zlabinger.at/asterisk
+#
+# usage: 2wav2mp3 <wave1> <wave2> <mp3>
+# designed for Asterisk Monitor(file,format,option) where option is "e" and
+# the variable
+# MONITOR_EXEC/var/lib/asterisk/bin/2wav2mp3
+
+
+# location of SOX (SOXMIX no longer needed)
+# (set according to your system settings, eg. /usr/bin)
+SOX="/usr/bin/sox"
+# lame is only required when sox does not support liblame
+#LAME=/usr/local/bin/lame
+
+
+# command line variables
+LEFT="$1"
+RIGHT="$2"
+OUT="${3%.wav}"    #tolgo wav
+OUT="${OUT%.WAV}"  #tolgo WAV
+
+
+#echo "inizio" >/tmp/contattamonitor.log
+#echo "$1 $2 $3" >>/tmp/contattamonitor.log
+
+#test if input files exist
+test ! -r $LEFT && exit 21
+test ! -r $RIGHT && exit 22
+
+#leggo la lunghezza del file
+LEFTLEN="$(du -b $LEFT|cut -f1)"
+RIGHTLEN="$(du -b $RIGHT|cut -f1)"
+echo "left len: $LEFTLEN, right: $RIGHTLEN"
+
+# combine and compress
+# this requires sox to be built with mp3-support.
+# To see if there is support for Mp3 run sox -h and
+#  look for it under the list of supported file formats as "mp3".
+echo "comparo lunghezze"
+if [ $RIGHTLEN -lt 45 ]; 
+then
+  $SOX -t wav -r 8000 -c 1 $LEFT $OUT.mp3
+elif [ $LEFTLEN -lt 45 ]; 
+then
+  $SOX -t wav -r 8000 -c 1 $RIGHT $OUT.mp3
+else
+  $SOX -m -r 8000 -v 5 $LEFT -v 5 $RIGHT $OUT.mp3
+fi
+
+### Salvo nome out con estensione
+### per uso successivo
+OUT=$OUT.mp3
+
+#######################
+#Per cryptare registrazione
+#######################
+#MP3=$OUT
+#OUT=$MP3.gpg       #aggiungo estensione
+#/bin/echo 'elly' | /usr/bin/gpg --output $OUT -q --batch --passphrase-fd 0 --symmetric $MP3
+#test -r $OUT && rm $MP3
+
+
+##############################
+#Se ok copio su server in Alta Affidabilità
+#  prima di recordatiSave devo mettere il percorso.
+#  lo estraggo da $0
+##############################
+#test -r $OUT &&  ${0%/*}/recordatiSave $OUT
+
+#remove input files if successfull
+test -r $OUT && rm $LEFT $RIGHT
+
+# eof
