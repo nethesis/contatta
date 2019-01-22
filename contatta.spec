@@ -1,5 +1,5 @@
 Name: contatta
-Version: 0.0.2
+Version: 0.0.3
 Release: 1%{?dist}
 Summary: Rest API for FreePBX
 Group: Network
