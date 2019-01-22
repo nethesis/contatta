@@ -1,5 +1,5 @@
 Name: contatta
-Version: 0.0.1
+Version: 0.0.2
 Release: 1%{?dist}
 Summary: Rest API for FreePBX
 Group: Network
@@ -7,7 +7,7 @@ License: GPLv2
 Source0: %{name}-%{version}.tar.gz
 Source1: contatta.tar.gz
 BuildRequires: nethserver-devtools, gettext
-Buildarch: noarch
+Buildarch: x86_64
 Requires: nethserver-freepbx, nethserver-samba
 
 %description
