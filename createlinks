@@ -16,4 +16,5 @@ event_templates($event, qw(
 
 event_services($event, qw(
    smb reload
+   asterisk restart
 ));
