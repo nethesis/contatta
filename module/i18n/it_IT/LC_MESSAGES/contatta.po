@@ -18,17 +18,11 @@ msgstr ""
 msgid "Contatta Configuration"
 msgstr "Configurazione Contatta"
 
-msgid "AGI IP 1"
-msgstr "IP AGI 1"
+msgid "AGI IP"
+msgstr "IP AGI"
 
-msgid "AGI IP 2"
-msgstr "IP AGI 2"
-
-msgid "First AGI Server IP"
-msgstr "IP del primo server AGI"
-
-msgid "AGI Backup Server IP"
-msgstr "IP del server AGI di backup"
+msgid "Comma separated list of AGI servers IP"
+msgstr "Lista dei server AGI separati da virgola"
 
 msgid "Select MONITOR script"
 msgstr "Selezionare il comando da usare per il comando Monitor"

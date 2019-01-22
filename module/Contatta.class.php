@@ -23,9 +23,8 @@ class Contatta extends \FreePBX_Helpers implements \BMO
 	// instance of this object.
 	public function install()
 	{
-            if(!$this->getConfig('agiip1') && !$this->getConfig('amipassword')) {
-                $this->setConfig('agiip1','');
-                $this->setConfig('agiip2','');
+            if(!$this->getConfig('agiip') && !$this->getConfig('amipassword')) {
+                $this->setConfig('agiip','');
                 $this->setConfig('monitorexec','');
                 $this->setConfig('ami','0');
                 $this->setConfig('amipassword',$this->password());
@@ -51,7 +50,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
 		//Handle form submissions
 		switch ($_REQUEST['action']) {
 			case 'save':
-			foreach (['agiip1','agiip2','monitorexec','ami','amipassword'] as $keyword) {
+			foreach (['agiip','monitorexec','ami','amipassword'] as $keyword) {
 				$this->setConfig($keyword,$_REQUEST[$keyword]);
 			}
                         $dbh = \FreePBX::Database();
@@ -78,8 +77,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
 	public function doDialplanHook(&$ext, $engine, $priority)
 	{
             $settings = $this->getAll();
-            $agiip1 = !empty($settings['agiip1']) ? $settings['agiip1'] : '';
-            $agiip2 = !empty($settings['agiip2']) ? $settings['agiip2'] : '';
+            $agiip = !empty($settings['agiip']) ? $settings['agiip'] : '';
             $monitorexec = !empty($settings['monitorexec']) ? $settings['monitorexec'] : '';
             $ami = !empty($settings['ami']) ? $settings['ami'] : '';
             $amipassword = !empty($settings['amipassword']) ? $settings['amipassword'] : '';
@@ -93,15 +91,16 @@ class Contatta extends \FreePBX_Helpers implements \BMO
             //Configurazione Route Point
             $exten = '81XXX';
             $ext->add($context, $exten, '', new \ext_ringing());
-            $ext->add($context, $exten, '', new \ext_agi('agi://'.$agiip1));
-            $ext->add($context, $exten, '', new \ext_gotoif('$["${AGISTATUS}" = "FAILURE"]','altaaffidabilita'));
-            $ext->add($context, $exten, 'altaaffidabilita', new \ext_agi('agi://'.$agiip2));
+            foreach (explode(',',$agiip) as $ip) {
+                $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip));
+            }
+            $ext->add($context, $exten, '', new \ext_hangup());
 
             //Configurazione Line IVR
             $exten = '82XXX';
-            $ext->add($context, $exten, '', new \ext_agi('agi://'.$agiip1));
-            $ext->add($context, $exten, '', new \ext_gotoif('$["${AGISTATUS}" = "FAILURE"]','altaaffidabilita'));
-            $ext->add($context, $exten, 'altaaffidabilita', new \ext_agi('agi://'.$agiip2));
+            foreach (explode(',',$agiip) as $ip) {
+                $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip));
+            }
 
             //Stanza di conference
             $exten = '85000.';
@@ -129,16 +128,16 @@ class Contatta extends \FreePBX_Helpers implements \BMO
 
             $context = 'makecall-contatta';
             $exten = 'failed';
-            $ext->add($context, $exten, '', new \ext_agi('agi://'.$agiip1));
-            $ext->add($context, $exten, '', new \ext_gotoif('$["${AGISTATUS}" = "FAILURE"]','altaaffidabilita'));
-            $ext->add($context, $exten, '', new \ext_agi('agi://'.$agiip2));
+            foreach (explode(',',$agiip) as $ip) {
+                $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip));
+            }
 
             //;Se risposta ok
             //;non risposta non entra
             $exten = '_X!';
-            $ext->add($context, $exten, '', new \ext_agi('agi://'.$agiip1));
-            $ext->add($context, $exten, '', new \ext_gotoif('$["${AGISTATUS}" = "FAILURE"]','altaaffidabilita'));
-            $ext->add($context, $exten, '', new \ext_agi('agi://'.$agiip2));
+            foreach (explode(',',$agiip) as $ip) {
+                $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip));
+            }
 	}
 
 	// http://wiki.freepbx.org/pages/viewpage.action?pageId=29753755
