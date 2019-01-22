@@ -32,14 +32,14 @@ $app->post('/extension/{extension}', function (Request $request, Response $respo
         $route = $request->getAttribute('route');
         $extension = $route->getArgument('extension');
         $body = $request->getParsedBody();
-        $context = isset($body['context']) && empty($body['context']) ? $body['context'] : 'webcall' ;
-
-        $secret = generateRandomPassword();
+        $context = isset($body['context']) && !empty($body['context']) ? $body['context'] : 'webcall' ;
+        $secret = isset($body['secret']) && !empty($body['secret']) ? $body['secret'] : generateRandomPassword();
 
         $res = createExtension($extension,$secret,$context);
         if ($res['status'] === false) {
             return $response->withJson($res, 500);
         }
+
         system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
         return $response->withJson($res, 200);
    } catch (Exception $e) {

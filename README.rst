@@ -38,7 +38,7 @@ Vengono esposte due API che consento la creazione e l'eliminazione di interni ap
 le API possono essere chiamate utilizzando una API KEY generata all'installazione del pacchetto e conservata nel file /var/lib/nethserver/secrets/contatta
 
 
-POST /freepbx/contatta/extension/<EXTENSION>  data: { 'context' : <CONTEXT> }  : crea l'extension <EXTENSION> nel contesto <CONTEXT> (contesto di default: "webcall")
+POST /freepbx/contatta/extension/<EXTENSION>  data: { 'context' : <CONTEXT>, 'secret' : <SECRET> }  : crea l'extension <EXTENSION> nel contesto <CONTEXT> e la password <SECRET> (il contesto di default se omesso è: "webcall" e la password se omessa viene generata casualmente) 
 
 esempio: ::
 
