@@ -31,10 +31,12 @@ $app->post('/extension/{extension}', function (Request $request, Response $respo
 
         $route = $request->getAttribute('route');
         $extension = $route->getArgument('extension');
+        $body = $request->getParsedBody();
+        $context = isset($body['context']) && empty($body['context']) ? $body['context'] : 'webcall' ;
 
         $secret = generateRandomPassword();
 
-        $res = createExtension($extension,$secret);
+        $res = createExtension($extension,$secret,$context);
         if ($res['status'] === false) {
             return $response->withJson($res, 500);
         }

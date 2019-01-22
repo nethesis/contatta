@@ -46,7 +46,7 @@ function checkTableExists($table) {
     }
 }
 
-function createExtension($extension,$secret){
+function createExtension($extension,$secret,$context = 'webcall'){
     try {
         global $astman;
         $errors = array(); $warnings = array(); $infos = array();
@@ -91,10 +91,10 @@ function createExtension($extension,$secret){
         $stmt = $dbh->prepare($sql);
         $stmt->execute(array($secret,$extension));
 
-        // Add extension to webcall context
-        $sql = 'UPDATE `sip` SET `data` = "webcall" WHERE `id` = ? AND `keyword` = "context"';
+        // Add extension to chosen context
+        $sql = 'UPDATE `sip` SET `data` = ? WHERE `id` = ? AND `keyword` = "context"';
         $stmt = $dbh->prepare($sql);
-        $stmt->execute(array($extension));
+        $stmt->execute(array($context,$extension));
 
         return array('status' => true, 'errors'=> $errors, 'warnings' => $warnings, 'infos' => $infos, 'extension' => $extension, 'secret' => $secret);
     } catch (Exception $e) {
