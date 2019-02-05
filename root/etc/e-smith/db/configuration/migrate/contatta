@@ -1,0 +1,18 @@
+{
+    #
+    # Enable WebRTC
+    #
+    
+    use esmith::ConfigDB;
+
+    my $configDb = esmith::ConfigDB->open() || return '';
+
+	my $asterisk = $configDb->get('asterisk') || return '';
+	my $AllowExternalWebRTC = $configDb->get_prop('asterisk', 'AllowExternalWebRTC') || return '';	
+
+	if ( $AllowExternalWebRTC eq 'disabled')
+    {	
+        $configDb->set_prop('asterisk','AllowExternalWebRTC','enabled');
+    }
+}
+
