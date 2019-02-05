@@ -27,5 +27,9 @@ fi
 tar xf $m -C $modules_dir$name --strip-components 1
 chown -R asterisk:asterisk $modules_dir$name
 
+# Enable the mini-HTTP Server and TLS for the mini-HTTP Server
+fbx_query 'UPDATE `freepbx_settings` SET `value` = "1" WHERE keyword = "HTTPENABLED"'
+fbx_query 'UPDATE `freepbx_settings` SET `value` = "1" WHERE keyword = "HTTPTLSENABLE"'
+
 /usr/bin/scl enable rh-php56 '/usr/sbin/fwconsole moduleadmin install contatta'
 
