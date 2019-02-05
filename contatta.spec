@@ -42,4 +42,7 @@ rm -rf %{buildroot}
 %doc
 
 %changelog
+* Tue Feb 05 2019 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.4-1
+- Enable the mini-HTTP Server and TLS for the mini-HTTP Server
+
 
