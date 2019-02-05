@@ -1,5 +1,5 @@
 Name: contatta
-Version: 0.0.4
+Version: 0.0.5
 Release: 1%{?dist}
 Summary: Rest API for FreePBX
 Group: Network
@@ -42,6 +42,9 @@ rm -rf %{buildroot}
 %doc
 
 %changelog
+* Tue Feb 05 2019 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.5-1
+- Open WebRTC ports by default
+
 * Tue Feb 05 2019 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.4-1
 - Enable the mini-HTTP Server and TLS for the mini-HTTP Server
 
