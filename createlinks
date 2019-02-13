@@ -5,7 +5,7 @@ my $event = 'contatta-update';
 
 event_actions($event, qw(
     initialize-default-databases 00
-    firewall-adjust
+    firewall-adjust 70
     contatta-update 60
 ));
 
