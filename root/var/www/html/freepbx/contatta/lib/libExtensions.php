@@ -90,6 +90,23 @@ function createExtension($extension,$secret,$context = 'webcall'){
         // Add extension to chosen context
         contattaWriteSipTableData($extension,"context",$context);
 
+        // Configure wss transport
+        contattaWriteSipTableData($extension,"transport","0.0.0.0-wss");
+
+        // enable AVPF
+        contattaWriteSipTableData($extension,"avpf","yes");
+
+        // enable ICE support
+        contattaWriteSipTableData($extension,"icesupport","yes");
+
+        // enable RTCP mux
+        contattaWriteSipTableData($extension,"rtcp_mux","yes");
+
+        // Enable DTLS, DTLS verify, DTLS Setup
+        $sql = "INSERT INTO `certman_mapping` (`id`, `cid`, `verify`, `setup`, `rekey`) VALUES (?,1,'no','actpass',0)";
+        $sth = $dbh->prepare($sql);
+        $res = $sth->execute(array($extension));
+
         return array('status' => true, 'errors'=> $errors, 'warnings' => $warnings, 'infos' => $infos, 'extension' => $extension, 'secret' => $secret);
     } catch (Exception $e) {
        error_log($e->getMessage());
@@ -113,6 +130,12 @@ function deleteExtension($extension) {
         $fpbx = FreePBX::create();
         $fpbx->Core->delUser($extension);
         $fpbx->Core->delDevice($extension);
+
+        // Delete cert configuration
+        $sql = "DELETE FROM `certman_mapping` WHERE `id` = ?";
+        $sth = $dbh->prepare($sql);
+        $res = $sth->execute(array($extension));
+
         return array('status' => true, 'errors'=> $errors, 'warnings' => $warnings, 'infos' => $infos);
     } catch (Exception $e) {
        error_log($e->getMessage());
