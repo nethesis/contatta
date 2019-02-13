@@ -89,7 +89,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
             $context = 'contatta';
 
             //Configurazione Route Point
-            $exten = '81XXX';
+            $exten = '_81XXX';
             $ext->add($context, $exten, '', new \ext_ringing());
             foreach (explode(',',$agiip) as $ip) {
                 $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip));
@@ -97,7 +97,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
             $ext->add($context, $exten, '', new \ext_hangup());
 
             //Configurazione Line IVR
-            $exten = '82XXX';
+            $exten = '_82XXX';
             foreach (explode(',',$agiip) as $ip) {
                 $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip));
             }
