@@ -79,22 +79,16 @@ function createExtension($extension,$secret,$context = 'webcall'){
         $astman->database_put("AMPUSER", $extension."/device", $extension);
 
         //set accountcode = mainextension
-        $sql = 'UPDATE IGNORE `sip` SET `data` = ? WHERE `id` = ? AND `keyword` = "accountcode"';
-        $stmt = $dbh->prepare($sql);
-        $stmt->execute(array($extension,$extension));
+        contattaWriteSipTableData($extension,"accountcode",$extension);
 
         //disable call waiting
         $astman->database_del("CW",$extension);
 
         // Overwrite sip password with the one provided
-        $sql = 'UPDATE `sip` SET `data` = ? WHERE `id` = ? AND `keyword` = "secret"';
-        $stmt = $dbh->prepare($sql);
-        $stmt->execute(array($secret,$extension));
+        contattaWriteSipTableData($extension,"secret",$secret);
 
         // Add extension to chosen context
-        $sql = 'UPDATE `sip` SET `data` = ? WHERE `id` = ? AND `keyword` = "context"';
-        $stmt = $dbh->prepare($sql);
-        $stmt->execute(array($context,$extension));
+        contattaWriteSipTableData($extension,"context",$context);
 
         return array('status' => true, 'errors'=> $errors, 'warnings' => $warnings, 'infos' => $infos, 'extension' => $extension, 'secret' => $secret);
     } catch (Exception $e) {
@@ -203,5 +197,16 @@ function checkFreeExtension($extension){
         $errors[] = $e->getMessage();
         return array('status' => false, 'errors'=> $errors, 'warnings' => $warnings, 'infos' => $infos);
     }
+}
+
+function contattaWriteSipTableData($id,$keyword,$value){
+    $dbh = FreePBX::Database();
+    $sql = 'UPDATE `sip` SET `data`=? WHERE (`id`=? OR `id` LIKE ?) AND `keyword`=?';
+    $sth = $dbh->prepare($sql);
+    $res = $sth->execute(array($value,$id,"9%$id",$keyword));
+    if ($res === FALSE) {
+        return new Exception($sth->errorInfo()[2]);
+    }
+    return true;
 }
 
