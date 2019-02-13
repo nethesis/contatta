@@ -103,7 +103,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
             }
 
             //Stanza di conference
-            $exten = '85000.';
+            $exten = '_85000.';
             $ext->add($context, $exten, '', new \ext_noop('conference'));
             $ext->add($context, $exten, '', new \ext_answer(''));
             $ext->add($context, $exten, '', new \ext_noop('amministratore exten: ${EXTEN}'));
@@ -119,7 +119,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
             $ext->add($context, $exten, '', new \ext_meetme('${EXTEN:0:-1}'));
 
             $context = 'webcall';
-            $exten = '_89XXX.';
+            $exten = '_89XXX';
             $ext->add($context, $exten, '', new \ext_goto('contatta,81${EXTEN:-2},1'));
 
             $context = 'macro-contatta';
