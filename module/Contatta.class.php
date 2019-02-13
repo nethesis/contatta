@@ -120,7 +120,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
 
             $context = 'webcall';
             $exten = '_89XXX';
-            $ext->add($context, $exten, '', new \ext_goto('contatta,81${EXTEN:-2},1'));
+            $ext->add($context, $exten, '', new \ext_goto('contatta,81${EXTEN:-3},1'));
 
             $context = 'macro-contatta';
             $exten = 's';
