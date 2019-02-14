@@ -1,5 +1,5 @@
 Name: contatta
-Version: 0.0.6
+Version: 0.0.7
 Release: 1%{?dist}
 Summary: Rest API for FreePBX
 Group: Network
@@ -42,6 +42,10 @@ rm -rf %{buildroot}
 %doc
 
 %changelog
+* Thu Feb 14 2019 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.7-1
+- Install required modules if they are missing
+- Fixed dialplan
+
 * Wed Feb 13 2019 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.6-1
 - Automatically configure API extension for WebRTC
 - Use a function to write asterisk sip table
