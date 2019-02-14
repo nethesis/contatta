@@ -31,6 +31,14 @@ chown -R asterisk:asterisk $modules_dir$name
 fbx_query 'UPDATE `freepbx_settings` SET `value` = "1" WHERE keyword = "HTTPENABLED"'
 fbx_query 'UPDATE `freepbx_settings` SET `value` = "1" WHERE keyword = "HTTPTLSENABLE"'
 
+# Install other needed modules
+for MODULE in certman manager queues ringgroups; do
+    if [[ ! $(scl enable rh-php56 -- fwconsole ma list | awk '{print $2,$6}' | grep -q $MODULE) ]] ; then
+        scl enable rh-php56 -- fwconsole ma downloadinstall $MODULE &> /dev/null
+    fi
+done
+
+# install contatta module
 /usr/bin/scl enable rh-php56 '/usr/sbin/fwconsole moduleadmin install contatta'
 
 # Apply changes
