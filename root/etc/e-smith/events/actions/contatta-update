@@ -30,6 +30,9 @@ chown -R asterisk:asterisk $modules_dir$name
 # Enable the mini-HTTP Server and TLS for the mini-HTTP Server
 fbx_query 'UPDATE `freepbx_settings` SET `value` = "1" WHERE keyword = "HTTPENABLED"'
 fbx_query 'UPDATE `freepbx_settings` SET `value` = "1" WHERE keyword = "HTTPTLSENABLE"'
+# Set NethServer certificate as default
+fbx_query 'UPDATE `freepbx_settings` SET `value` = "/etc/asterisk/keys/NethServer.pem" WHERE keyword = "HTTPTLSCERTFILE"'
+fbx_query 'UPDATE `freepbx_settings` SET `value` = "/etc/asterisk/keys/NethServer.key" WHERE keyword = "HTTPTLSPRIVATEKEY"'
 
 # Install other needed modules
 for MODULE in certman manager queues ringgroups; do
