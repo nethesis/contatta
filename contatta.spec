@@ -1,5 +1,5 @@
 Name: contatta
-Version: 0.0.7
+Version: 0.0.8
 Release: 1%{?dist}
 Summary: Rest API for FreePBX
 Group: Network
@@ -42,6 +42,9 @@ rm -rf %{buildroot}
 %doc
 
 %changelog
+* Mon Mar 04 2019 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.8-1
+- Automatically set NethServer certificates
+
 * Thu Feb 14 2019 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.7-1
 - Install required modules if they are missing
 - Fixed dialplan
