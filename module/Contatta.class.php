@@ -59,7 +59,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
                         $sth->execute(array());
                         if ($_REQUEST['ami'] && isset($_REQUEST['amipassword']) && !empty($_REQUEST['amipassword'])) {
                             //Set ami password
-                            $sql = 'INSERT INTO `manager` set name="contatta", secret=?, deny="0.0.0.0/0.0.0.0", permit="0.0.0.0/0.0.0.0", `read`="system,call,log,verbose,command,agent,user,config,dtmf,reporting,cdr,dialplan,originate" , `write`="system,call,log,verbose,command,agent,user,config,dtmf,reporting,cdr,dialplan,originate", `writetimeout`=100';
+                            $sql = 'INSERT INTO `manager` set name="contatta", secret=?, deny="0.0.0.0/0.0.0.0", permit="0.0.0.0/0.0.0.0", `read`="system,call,originate" , `write`="system,call,originate", `writetimeout`=100';
                             $sth = $dbh->prepare($sql);
                             $sth->execute(array($_REQUEST['amipassword']));
                         }
@@ -89,7 +89,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
             $context = 'contatta';
 
             //Configurazione Route Point
-            $exten = '_81XXX';
+            $exten = '_81XXX.';
             $ext->add($context, $exten, '', new \ext_ringing());
             foreach (explode(',',$agiip) as $ip) {
                 $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip));
