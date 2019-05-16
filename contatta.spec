@@ -42,6 +42,9 @@ rm -rf %{buildroot}
 %doc
 
 %changelog
+* Thu May 16 2019 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.10-1
+- changed AMI user permission, changed diaplan pattern, updated version
+
 * Mon Mar 04 2019 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.8-1
 - Automatically set NethServer certificates
 
