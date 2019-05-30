@@ -89,7 +89,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
             $context = 'contatta';
 
             //Configurazione Route Point
-            $exten = '_81XXX.';
+            $exten = '_81.';
             $ext->add($context, $exten, '', new \ext_ringing());
             foreach (explode(',',$agiip) as $ip) {
                 $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip));
@@ -97,7 +97,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
             $ext->add($context, $exten, '', new \ext_hangup());
 
             //Configurazione Line IVR
-            $exten = '_82XXX.';
+            $exten = '_82.';
             foreach (explode(',',$agiip) as $ip) {
                 $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip));
             }
@@ -117,6 +117,12 @@ class Contatta extends \FreePBX_Helpers implements \BMO
             $ext->add($context, $exten, '', new \ext_set('CONFBRIDGE(user,end_marked)','yes'));
             $ext->add($context, $exten, '', new \ext_set('CONFBRIDGE(user,quiet)','yes'));
             $ext->add($context, $exten, '', new \ext_meetme('${EXTEN:0:-1}'));
+
+            //Configurazione Linee intrusione
+            $exten = '_85010.';
+            foreach (explode(',',$agiip) as $ip) {
+                $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip));
+            }
 
             $context = 'webcall';
             $exten = '_89XXX';
