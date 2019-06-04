@@ -42,6 +42,9 @@ rm -rf %{buildroot}
 %doc
 
 %changelog
+* Tue Jun 04 2019 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.11-1
+- added intrusion line(s) handler, modified route points/wave lines handler
+
 * Mon Mar 04 2019 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.8-1
 - Automatically set NethServer certificates
 
