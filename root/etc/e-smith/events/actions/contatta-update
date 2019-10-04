@@ -46,8 +46,3 @@ done
 
 # Apply changes
 /usr/bin/scl enable rh-php56 -- fwconsole r
-
-# install lame if not installed
-if ! rpm -qa | grep lame; then
-    yum install lame
-fi
