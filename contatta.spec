@@ -1,5 +1,5 @@
 Name: contatta
-Version: 0.0.11
+Version: 0.0.12
 Release: 1%{?dist}
 Summary: Rest API for FreePBX
 Group: Network
@@ -42,6 +42,9 @@ rm -rf %{buildroot}
 %doc
 
 %changelog
+* Fri Oct 04 2019 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.12-1
+- Added mp3 support
+
 * Tue Jun 04 2019 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.11-1
 - added intrusion line(s) handler, modified route points/wave lines handler
 
