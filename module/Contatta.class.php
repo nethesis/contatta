@@ -103,7 +103,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
             $ext->add($context, $exten, '', new \ext_answer(''));
             $ext->add($context, $exten, '', new \ext_verbose('attendo 1 secondo'));
             $ext->add($context, $exten, '', new \ext_wait('1'));
-            
+
             $ext->add($context, $exten, 'agi', new \ext_noop('eseguo agi waveline'));
             foreach (explode(',',$agiip) as $ip) {
                 $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip));
@@ -138,7 +138,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
             $context = 'macro-contatta';
             $exten = 's';
             $ext->add($context, $exten, '', new \ext_gotoif('$["${fileWaveAgent}" = ""]','agi'));
-            $ext->add($context, $exten, '', new \ext_background('${fileWaveAgent}')); 
+            $ext->add($context, $exten, '', new \ext_background('${fileWaveAgent}'));
             $ext->add($context, $exten, 'agi', new \ext_agi('agi://${ARG2}/contatta_${ARG1}'));
 
             $context = 'makecall-contatta';
