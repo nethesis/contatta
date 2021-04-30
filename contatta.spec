@@ -42,6 +42,9 @@ rm -rf %{buildroot}
 %doc
 
 %changelog
+* Fri Apr 30 2021 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.13-1
+- dialplan modified in order to resolve REFER NOTIFY latency
+
 * Fri Oct 04 2019 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.12-1
 - Added mp3 support
 
