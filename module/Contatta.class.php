@@ -98,10 +98,10 @@ class Contatta extends \FreePBX_Helpers implements \BMO
 
             //Configurazione Line IVR
             $exten = '_82.';
-            $ext->add($context, $exten, '', new \ext_verbose('match regex trasferimento cieco=${REGEX("contatta_blind_transfer=true",${SIPREFERTOHDR})}'));
+            $ext->add($context, $exten, '', new \ext_noop('match regex trasferimento cieco=${REGEX("contatta_blind_transfer=true",${SIPREFERTOHDR})}'));
             $ext->add($context, $exten, '', new \ext_gotoif('$["${REGEX("contatta_blind_transfer=true",${SIPREFERTOHDR})}" = "0"]','agi'));
             $ext->add($context, $exten, '', new \ext_answer(''));
-            $ext->add($context, $exten, '', new \ext_verbose('attendo 1 secondo'));
+            $ext->add($context, $exten, '', new \ext_noop('attendo 1 secondo'));
             $ext->add($context, $exten, '', new \ext_wait('1'));
 
             $ext->add($context, $exten, 'agi', new \ext_noop('eseguo agi waveline'));
