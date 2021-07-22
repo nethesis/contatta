@@ -1,5 +1,5 @@
 -----BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Hash: SHA256
 
 ;################################################
 ;#        FreePBX Module Signature File         #
@@ -12,12 +12,12 @@ Hash: SHA1
 [config]
 version=2
 hash=sha256
-signedwith=5B597629
+signedwith=E30D7B3DF08B9A9F7F04DD650F6396405B597629
 signedby=sign.php
 repo=manual
 type=public
 [hashes]
-Contatta.class.php = b4116baefc2f80f7c4631b3214a45743ad0e258b9360836da59995cf50e39f48
+Contatta.class.php = 8a1fd8d3228a161b4f1f6b0d885371f4efe43f7a79571cb5b0989aae43a86ff0
 LICENSE = fc1014fcb115e350660a895cdf536c259a2108c1cd2d8f1772d81ece410a3dba
 README.md = 5ec4844cb78e31d90cba894dba1b609857827a4acb255e693d61b9dfb016d602
 i18n/it_IT/LC_MESSAGES/contatta.mo = 6244721187cca06ad54e05f8443bb88c9e04de3de5c69d96d5de5b957f038b4e
@@ -29,11 +29,12 @@ views/form.php = 86e7e7cc5bf8c92c18cb1afc566e3b6e80657ca59e5355c8a73e2c688f6f7d6
 ;# End
 -----BEGIN PGP SIGNATURE-----
 
-iQEcBAEBAgAGBQJcpwTjAAoJEA9jlkBbWXYpcMsH/RArp6gpRX9Ad3pWIF1hp2CO
-hhTSluqn2Ss7Fv23Rt/BJcHfrYg1DG8+/QaSb/GSGc7fafetCO0k35nxtxHiYcVU
-tcSBl11kDUdICD+2aDRIbjRY612LiN/yjjp6vxOEZSLrrV/JezFzASdVdn1lZhC9
-YzTyMgZtdaPjmguZuiwmKeKzgUMx4419kgs2qdk9K1E/NG4qRduQgfgkvXGFUoNE
-teSU9OS6hQaNxM1rTpNRflwb/KD8tIhIIHvJfhGoNZrbST/CZcEN5rO6HzMJQUn1
-ZtSs06MgtG3cQyghdL+DCqG5vWBc2NCgFsCQucRLgSi/AuPwnvU5qr72n4iS6qY=
-=KQtG
+iQEzBAEBCAAdFiEE4w17PfCLmp9/BN1lD2OWQFtZdikFAmD5QpYACgkQD2OWQFtZ
+dilaEQf/S/BZgS4FPA7YGhfwrg5rAGh4ZW0tCkdvom4l+AXs7GFaSFSdEXYYuBy9
+BdI/LoHjvWIbC30WBh4KirvNGAb11/BubyodlOvOYlwJf/8qVnm7zJmKIzyFqpVl
+rWKwU/P0hTlvm+gsRcPzRZQDWAph/PXt1AQz8jO9vAweeIik59YH/w8y8yVeBAxf
+wa9yMx9zjcG4iR3zL6lA0+15HDrOGCA64UlXqiVX27C/x9ju9ggMckRpWAXvkrRH
+KK6Ik049E90OGcik0dzjyPWNjQf9Ol5b3A3IFUmQWa5oQbK/hKf5SKb/mdRQlXSl
+wpOFJIm8eMosF3771B/HuKj6DNkMgQ==
+=WJEI
 -----END PGP SIGNATURE-----
