@@ -1,5 +1,5 @@
 Name: contatta
-Version: 0.0.13
+Version: 0.0.14
 Release: 1%{?dist}
 Summary: Rest API for FreePBX
 Group: Network
@@ -42,6 +42,9 @@ rm -rf %{buildroot}
 %doc
 
 %changelog
+* Thu Jul 22 2021 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.14-1
+- Fix dialplan
+
 * Fri Apr 30 2021 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.13-1
 - dialplan modified in order to resolve REFER NOTIFY latency
 
