@@ -107,20 +107,34 @@ risultato: ::
     ]
 
 POST /contatta/trunk[/trunkid] : crea un nuovo fascio con i dati specificati nel body. Se si specifica il trunkid, questo verrà eliminato e ricreato con i dati del body
+
 i parametri obbligatori sono:
+
 name
+
 outcid
+
 sipserver
+
 sipserverport
+
 context
+
 authentication
+
 registration
+
 username
+
 secret
 contactuser
+
 fromdomain
+
 fromuser
+
 codecs
+
 
 esempio: ::
 
@@ -194,26 +208,47 @@ risultato: ::
     ]
 
 POST /contatta/inboundroute : crea una nuova rotta in ingresso
+
 i parametri del body sono:
+
 cidnum
+
 description
+
 extension (did)
+
 destination
+
 fanswer (opzionale) default: ""
+
 delay_answer (opzionale) default: "0"
+
 rvolume (opzionale) default: ""
+
 privacyman (opzionale) default: "0"
+
 pmmaxretries (opzionale) default: ""
+
 pmminlength (opzionale) default: ""
+
 alertinfo (opzionale) default: ""
+
 ringing (opzionale) default: ""
+
 reversal (opzionale) default: ""
+
 mohclass (opzionale) default: "default"
+
 grppre (opzionale) default: ""
+
 pricid (opzionale) default: ""
+
 rnavsort (opzionale) default: "description"
+
 didfilter (opzionale) default: ""
+
 indication_zone (opzionale) default: "default"
+
 
 esempio: ::
 
@@ -306,23 +341,41 @@ risultato: ::
     ]
 
 POST /contatta/outboundroute[/<route_id>] :  crea una nuova rotta in uscita o modifica un rotta esistente se specificato il route_id
+
 i parametri del body sono:
+
 name
+
 outcid (opzionale) default: ""
+
 outcid_mode (opzionale) default: ""
+
 password (opzionale) default: ""
+
 emergency_route (opzionale) default: ""
+
 intracompany_route (opzionale) default: ""
+
 mohclass (opzionale) default: "default"
+
 time_group_id (opzionale) default: NULL
+
 patterns (opzionale) default: ""
+
 trunks (opzionale) default: ""
+
 seq (opzionale) default: NULL
+
 dest (opzionale) default: ""
+
 time_mode (opzionale) default: ""
+
 timezone (opzionale) default: ""
+
 calendar_id (opzionale) default: ""
+
 calendar_group_id (opzionale) default: ""
+
 
 esempio: ::
 
