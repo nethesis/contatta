@@ -193,7 +193,7 @@ $app->post('/trunk[/{trunkid}]', function (Request $request, Response $response,
 $app->delete('/trunk/{trunkid}', function (Request $request, Response $response, $args) {
     try {
         $route = $request->getAttribute('route');
-        $name = $route->getArgument('name');
+        $trunkid = $route->getArgument('trunkid');
         $dbh = FreePBX::Database();
 
         $sql = "DELETE IGNORE FROM `trunks` WHERE `trunkid` = ?";
@@ -205,7 +205,7 @@ $app->delete('/trunk/{trunkid}', function (Request $request, Response $response,
         $sth->execute([$trunkid]);
 
         system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
-        return $response->withJson($res, 200);
+        return $response->withStatus(204);
     } catch (Exception $e) {
        error_log($e->getMessage());
        $errors[] = $e->getMessage();
@@ -236,7 +236,11 @@ $app->post('/inboundroute', function (Request $request, Response $response, $arg
             }
         }
 
-        $res = FreePBX::Core()->addDID($settings);
+        if (FreePBX::Core()->addDID($settings)) {
+            $res = FreePBX::Core()->getDID($settings['extension'],$settings['cidnum']);
+        } else {
+            throw new Exception("Error creating DID");
+        }
 
         system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
         return $response->withJson($res, 200);
@@ -254,7 +258,7 @@ $app->delete('/inboundroute', function (Request $request, Response $response, $a
         $cidnum = $params['cid'];
         FreePBX::Core()->delDID($extension, $cidnum ? $cidnum : '');
         system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
-        return $response->withJson($res, 200);
+        return $response->withStatus(204);
     } catch (Exception $e) {
        error_log($e->getMessage());
        $errors[] = $e->getMessage();
@@ -333,7 +337,7 @@ $app->post('/outboundroute[/{route_id}]', function (Request $request, Response $
         }
         call_user_func_array('core_routing_addbyid',$parameters);
         system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
-        return $response->withJson($res, 200);
+        return $response->withStatus(201);
    } catch (Exception $e) {
        error_log($e->getMessage());
        $errors[] = $e->getMessage();
@@ -348,7 +352,7 @@ $app->delete('/outboundroute/{route_id}', function (Request $request, Response $
         $route_id = $route->getArgument('route_id');
         core_routing_delbyid($route_id);
         system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
-        return $response->withJson($res, 200);
+        return $response->withStatus(204);
     } catch (Exception $e) {
        error_log($e->getMessage());
        $errors[] = $e->getMessage();
