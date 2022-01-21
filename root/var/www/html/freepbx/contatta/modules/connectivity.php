@@ -79,6 +79,7 @@ $app->post('/trunk[/{trunkid}]', function (Request $request, Response $response,
             $sth = $dbh->prepare($sql);
             $sth->execute([$trunkid]);
         }
+	$params['disabled'] = (!isset($params['disabled'])) ? 'off' : $params['disabled'];
         $sql = "INSERT INTO `trunks` (`trunkid`,`tech`,`channelid`,`name`,`outcid`,`keepcid`,`maxchans`,`failscript`,`dialoutprefix`,`usercontext`,`provider`,`disabled`,`continue`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
         $sth = $dbh->prepare($sql);
         $sth->execute(array(
@@ -93,7 +94,7 @@ $app->post('/trunk[/{trunkid}]', function (Request $request, Response $response,
             '',
             '',
             '',
-            'off',
+            $params['disabled'],
             'off'
         ));
 
@@ -183,6 +184,29 @@ $app->post('/trunk[/{trunkid}]', function (Request $request, Response $response,
 
         system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
         return $response->withJson(["trunkid" => $trunkid], 200);
+   } catch (Exception $e) {
+       error_log($e->getMessage());
+       $errors[] = $e->getMessage();
+       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+   }
+});
+
+$app->post('/trunk/{trunkid}/disabled/{disabled:on|off}', function (Request $request, Response $response, $args) {
+    try {
+        $route = $request->getAttribute('route');
+        $params = $request->getParsedBody();
+        $trunkid = $route->getArgument('trunkid');
+        $disabled = $route->getArgument('disabled');
+
+        $dbh = FreePBX::Database();
+	$sql = "UPDATE `trunks` SET `disabled` = ? WHERE `trunkid` = ?";
+        $sth = $dbh->prepare($sql);
+        if (!$sth->execute(array($disabled,$trunkid))) {
+		throw new Exception("error executing query $sql");
+	}
+
+        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        return $response->withStatus(204);
    } catch (Exception $e) {
        error_log($e->getMessage());
        $errors[] = $e->getMessage();

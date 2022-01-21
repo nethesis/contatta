@@ -127,6 +127,7 @@ registration
 username
 
 secret
+
 contactuser
 
 fromdomain
@@ -134,6 +135,10 @@ fromdomain
 fromuser
 
 codecs
+
+Parametro acoltativo:
+
+disabled off|on - disabilita il fascio. Default off
 
 
 esempio: ::
@@ -145,6 +150,18 @@ risultato: ::
     200 OK
 
     {"trunkid":6}
+
+
+POST /trunk/<trunkid>/disabled/<on|off> : abilita o disabilita il fascio specificato. "on" disabilita il fascio, "off" lo abilita.
+
+esempio: ::
+
+    curl -kv 'https://localhost/freepbx/contatta/trunk/5/disabled/on' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' -X POST
+
+risultato: ::
+
+    204 No Content
+
 
 DELETE /contatta/trunk/<trunkid> : elimina il fascio specificato
 
