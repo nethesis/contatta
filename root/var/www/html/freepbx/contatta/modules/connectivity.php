@@ -339,7 +339,6 @@ $app->post('/outboundroute[/{route_id}]', function (Request $request, Response $
             $default_params = FreePBX::Core()->getRouteByID($route_id);
             $default_params['trunks'] = core_routing_getroutetrunksbyid($route_id);
             $default_params['patterns'] = FreePBX::Core()->getRoutePatternsByID($route_id);
-            core_routing_delbyid($route_id);
         } else {
             $default_params = array(
                 'outcid' => '',
@@ -371,7 +370,11 @@ $app->post('/outboundroute[/{route_id}]', function (Request $request, Response $
                 throw new Exception("Missing $p parameter");
             }
         }
-        $route_id = call_user_func_array('core_routing_addbyid',$parameters);
+        if (isset($route_id)) {
+            call_user_func_array('core_routing_editbyid',['route_id'=>$route_id]+$parameters);
+        } else {
+            $route_id = call_user_func_array('core_routing_addbyid',$parameters);
+        }
         system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
         return $response->withJson(["route_id" => $route_id],200);
    } catch (Exception $e) {
