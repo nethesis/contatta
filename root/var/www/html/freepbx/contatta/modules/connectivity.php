@@ -29,7 +29,19 @@ $app->get('/trunk', function (Request $request, Response $response, $args) {
         foreach($trunks as $trunk) {
             // Get trunk username
             $details = FreePBX::Core()->getTrunkDetails($trunk['trunkid']);
-            $trunk['username'] = $details['username'];
+            $trunk['sipserver'] = $details['sip_server'];
+            $trunk['sipserverport'] = $details['sip_server_port'];
+            $trunk['fromdomain'] = $details['from_domain'];
+            $trunk['fromuser'] = $details['from_user'];
+            foreach (['username','context','authentication','registration','username','secret','contactuser'] as $prop) {
+                $trunk[$prop] = $details[$prop];
+            }
+            $codecs = [];
+            $i = 0;
+            foreach (explode(',',$details['codecs']) as $cname) {
+                 $codecs[] = ["nome"=>$cname,"enabled"=>true,"position"=>++$i];
+            }
+            $trunk['codecs'] = $codecs;
             array_push($result, $trunk);
         }
         return $response->withJson($result,200);
@@ -359,9 +371,9 @@ $app->post('/outboundroute[/{route_id}]', function (Request $request, Response $
                 throw new Exception("Missing $p parameter");
             }
         }
-        call_user_func_array('core_routing_addbyid',$parameters);
+        $route_id = call_user_func_array('core_routing_addbyid',$parameters);
         system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
-        return $response->withStatus(201);
+        return $response->withJson(["route_id" => $route_id],200);
    } catch (Exception $e) {
        error_log($e->getMessage());
        $errors[] = $e->getMessage();
