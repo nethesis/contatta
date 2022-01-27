@@ -398,3 +398,61 @@ $app->delete('/outboundroute/{route_id}', function (Request $request, Response $
        return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
     }
 });
+
+$app->post('/customdest[/{destid}]', function (Request $request, Response $response, $args) {
+    try {
+        $route = $request->getAttribute('route');
+        $destid = $route->getArgument('destid');
+        $params = $request->getParsedBody();
+        $custom = \FreePBX::Customappsreg();
+        $params['destret'] = "0";
+        if (empty($destid)) {
+            $currentid = $custom->getConfig("currentid");
+            if (!$currentid) {
+                $currentid = 1;
+            }
+            $params['destid'] = $currentid;
+            $custom->setConfig($currentid++, $params, "dests");
+            $custom->setConfig("currentid", $currentid);
+        } else {
+            $custom->setConfig($destid, $params, "dests");
+        }
+        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        return $response->withStatus(201);
+   } catch (Exception $e) {
+       error_log($e->getMessage());
+       $errors[] = $e->getMessage();
+       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+   }
+});
+
+$app->delete('/customdest/{destid}', function (Request $request, Response $response, $args) {
+    try {
+        $route = $request->getAttribute('route');
+        $destid = $route->getArgument('destid');
+        $custom = \FreePBX::Customappsreg();
+        $custom->setConfig($destid, false, "dests");
+        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        return $response->withStatus(204);
+   } catch (Exception $e) {
+       error_log($e->getMessage());
+       $errors[] = $e->getMessage();
+       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+   }
+});
+
+$app->get('/customdest[/{destid}]', function (Request $request, Response $response, $args) {
+    try {
+        $route = $request->getAttribute('route');
+        $destid = $route->getArgument('destid');
+        if (empty($destid)) {
+            return $response->withJson(\FreePBX::Customappsreg()->getAllCustomDests(),200);
+        } else {
+            return $response->withJson(\FreePBX::Customappsreg()->getConfig($destid, "dests"),200);
+        }
+   } catch (Exception $e) {
+       error_log($e->getMessage());
+       $errors[] = $e->getMessage();
+       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+   }
+});

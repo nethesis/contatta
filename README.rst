@@ -412,6 +412,68 @@ risultato: ::
 
     204 No Content
 
+
+POST /contatta/customdest[/<destid>] : crea una nuova destinazione custom o modifica una esistente
+
+i parametri del body sono:
+
+target - destinazione destinazione del dialplan
+
+description 
+
+notes 
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/customdest' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"target":"app-blackhole,hangup,1","description":"Hangup","notes":"This is a test"}'
+
+esempio2: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/customdest/1' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"target":"app-blackhole,hangup,1","description":"Hangup","notes":"This is an edit test"}'
+
+risultato: ::
+
+    200 OK
+
+    {
+      "destid":4
+    }
+
+
+
+DELETE /contatta/customdest/<destid> : elimina  una destinazione custom
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/customdest/1' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' -X DELETE
+
+risultato: ::
+
+    204 No Content
+
+    
+GET /contatta/customdest[/<destid>] : ritorna tutte le destinazioni custom o solo quella con l'id specificato
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/customdest' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
+
+risultato: ::
+
+    200 OK
+
+    {
+      "1": {
+        "destid": "1",
+        "target": "app-blackhole,hangup,1",
+        "description": "Hangupf",
+        "notes": "This is a test",
+        "destret": "1",
+        "dest": "app-blackhole,hangup,1"
+      }
+    }
+
+
 Certificato
 ===========
 
