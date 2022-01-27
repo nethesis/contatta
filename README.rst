@@ -120,9 +120,9 @@ sipserverport
 
 context
 
-authentication
+authentication inbound|outbound|both|off
 
-registration
+registration send|receive|none
 
 username
 
@@ -143,7 +143,7 @@ disabled off|on - disabilita il fascio. Default off
 
 esempio: ::
 
-    curl -kv 'https://localhost/freepbx/contatta/trunk' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"name":"Test trunk","outcid":"","sipserver":"sip.foo.bar","sipserverport":"5060","context":"from-trunk","authentication":"foofoo","registration":"send","username":"username","secret":"secret","contactuser":"zz","fromdomain":"sss","fromuser":"1234","codecs":[{"nome":"alaw","enabled":1,"position":1},{"nome":"ulaw","enabled":true,"position":2}]}'
+    curl -kv 'https://localhost/freepbx/contatta/trunk' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"name":"Test trunk","outcid":"","sipserver":"sip.foo.bar","sipserverport":"5060","context":"from-trunk","authentication":"outbound","registration":"send","username":"username","secret":"secret","contactuser":"zz","fromdomain":"sss","fromuser":"1234","codecs":[{"nome":"alaw","enabled":1,"position":1},{"nome":"ulaw","enabled":true,"position":2}]}'
 
 risultato: ::
 
