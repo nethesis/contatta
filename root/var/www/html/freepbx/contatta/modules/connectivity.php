@@ -424,6 +424,7 @@ $app->post('/customdest[/{destid}]', function (Request $request, Response $respo
             $custom->setConfig($destid++, $params, "dests");
             $custom->setConfig("currentid", $destid);
         } else {
+            $params['destid'] = $destid;
             $custom->setConfig($destid, $params, "dests");
         }
         system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
