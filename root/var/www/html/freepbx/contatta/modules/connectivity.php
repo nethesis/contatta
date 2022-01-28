@@ -272,6 +272,15 @@ $app->post('/inboundroute', function (Request $request, Response $response, $arg
             }
         }
 
+        $old = FreePBX::Core()->getDID($settings['extension'],$settings['cidnum']);
+        if (!empty($old)) {
+            foreach ($old as $oldkey => $oldvar) {
+                if (!isset($settings[$oldkey])) {
+                    $settings[$oldkey] = $oldvar;
+                }
+            }
+            FreePBX::Core()->delDID($settings['extension'],$settings['cidnum']);
+        }
         if (FreePBX::Core()->addDID($settings)) {
             $res = FreePBX::Core()->getDID($settings['extension'],$settings['cidnum']);
         } else {
@@ -407,18 +416,18 @@ $app->post('/customdest[/{destid}]', function (Request $request, Response $respo
         $custom = \FreePBX::Customappsreg();
         $params['destret'] = "0";
         if (empty($destid)) {
-            $currentid = $custom->getConfig("currentid");
-            if (!$currentid) {
-                $currentid = 1;
+            $destid = $custom->getConfig("currentid");
+            if (!$destid) {
+                $destid = 1;
             }
-            $params['destid'] = $currentid;
-            $custom->setConfig($currentid++, $params, "dests");
-            $custom->setConfig("currentid", $currentid);
+            $params['destid'] = $destid;
+            $custom->setConfig($destid++, $params, "dests");
+            $custom->setConfig("currentid", $destid);
         } else {
             $custom->setConfig($destid, $params, "dests");
         }
         system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
-        return $response->withStatus(201);
+        return $response->withJson(["destid" => $destid],200);
    } catch (Exception $e) {
        error_log($e->getMessage());
        $errors[] = $e->getMessage();
@@ -456,3 +465,57 @@ $app->get('/customdest[/{destid}]', function (Request $request, Response $respon
        return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
    }
 });
+
+$app->post('/setcid[/{id}]', function (Request $request, Response $response, $args) {
+    try {
+        $route = $request->getAttribute('route');
+        $id = $route->getArgument('id');
+        $params = $request->getParsedBody();
+
+        foreach (['description','cid_name','cid_num','destination'] as $p) {
+            if (!isset($params[$p])) {
+                throw new Exception("Missing $p parameter");
+            }
+        }
+        $id = !empty($i) ? $id : null;
+        \FreePBX::Setcid()->update($id,$params['description'],$params['cid_name'],$params['cid_num'],$params['destination']);
+
+        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        return $response->withStatus(201);
+   } catch (Exception $e) {
+       error_log($e->getMessage());
+       $errors[] = $e->getMessage();
+       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+   }
+});
+
+$app->delete('/setcid/{id}', function (Request $request, Response $response, $args) {
+    try {
+        $route = $request->getAttribute('route');
+        $id = $route->getArgument('id');
+        \FreePBX::Setcid()->delete($id);
+        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        return $response->withStatus(204);
+   } catch (Exception $e) {
+       error_log($e->getMessage());
+       $errors[] = $e->getMessage();
+       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+   }
+});
+
+$app->get('/setcid[/{id}]', function (Request $request, Response $response, $args) {
+try {
+        $route = $request->getAttribute('route');
+        $id = $route->getArgument('id');
+        if (!empty($id)) {
+            return $response->withJson(\FreePBX::Setcid()->get($id),200);
+        } else {
+            return $response->withJson(\FreePBX::Setcid()->getAll(),200);
+        }
+   } catch (Exception $e) {
+       error_log($e->getMessage());
+       $errors[] = $e->getMessage();
+       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+   }
+});
+

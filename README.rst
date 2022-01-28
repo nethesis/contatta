@@ -42,6 +42,7 @@ Valorizzare la variabile SecretKey per gli esempi: ::
     SecretKey=$(cat /var/lib/nethserver/secrets/contatta)
 
 POST /freepbx/contatta/extension/<EXTENSION>  data: { 'context' : <CONTEXT>, 'secret' : <SECRET> }  : crea l'extension <EXTENSION> nel contesto <CONTEXT> e la password <SECRET> (il contesto di default se omesso è: "webcall" e la password se omessa viene generata casualmente)
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 esempio: ::
 
@@ -61,6 +62,7 @@ genera l'interno 405 nel contesto webcall e restituisce un json contenente event
 NOTA: gli interni appartengono al contesto webcall e non possono chamare numeri deversi dagli agenti. Tuttavia se venissero modificati dall'interfaccia di FreePBX, il contesto verrebbe perso. Questi interni non vanno modificati dall'interfaccia di FreePBX ma solamente tramite le REST API
 
 DELETE /freepbx/contatta/extension/<EXTENSION> : elimina l'extension <EXTENSION>
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 esempio: ::
 
@@ -107,6 +109,7 @@ risultato: ::
     ]
 
 POST /contatta/trunk[/trunkid] : crea un nuovo fascio con i dati specificati nel body. Se si specifica il trunkid, questo verrà eliminato e ricreato con i dati del body
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 i parametri obbligatori sono:
 
@@ -153,6 +156,7 @@ risultato: ::
 
 
 POST /trunk/<trunkid>/disabled/<on|off> : abilita o disabilita il fascio specificato. "on" disabilita il fascio, "off" lo abilita.
+--------------------------------------------------------------------------------------------------------------------------------------
 
 esempio: ::
 
@@ -164,6 +168,7 @@ risultato: ::
 
 
 DELETE /contatta/trunk/<trunkid> : elimina il fascio specificato
+-----------------------------------------------------------------------------------------------
 
 esempio: ::
 
@@ -174,6 +179,7 @@ risultato: ::
     204 No Content
 
 GET /contatta/inboundroute : restituisce la lista delle rotte in ingresso con i loro dettagli
+-----------------------------------------------------------------------------------------------
 
 esempio: ::
 
@@ -225,6 +231,7 @@ risultato: ::
     ]
 
 POST /contatta/inboundroute : crea una nuova rotta in ingresso
+-----------------------------------------------------------------
 
 i parametri del body sono:
 
@@ -296,6 +303,7 @@ risultato: ::
     }
 
 DELETE /contatta/inboundroute : elimina la rotta definita da cidnum ed extension che devono essere specificati nel body
+-------------------------------------------------------------------------------------------------------------------------
 
 esempio: ::
 
@@ -307,6 +315,7 @@ risultato: ::
 
 
 GET /contatta/outboundroute : restituisce la lista delle rotte in uscita con i loro dettagli
+----------------------------------------------------------------------------------------------
 
 esempio: ::
 
@@ -358,6 +367,7 @@ risultato: ::
     ]
 
 POST /contatta/outboundroute[/<route_id>] :  crea una nuova rotta in uscita o modifica un rotta esistente se specificato il route_id
+--------------------------------------------------------------------------------------------------------------------------------------
 
 i parametri del body sono:
 
@@ -403,6 +413,7 @@ risultato: ::
     201 Created
 
 DELETE /contatta/outboundroute/<route_id> : elimina la rotta con id route_id
+-------------------------------------------------------------------------------
 
 esempio: ::
 
@@ -414,6 +425,7 @@ risultato: ::
 
 
 POST /contatta/customdest[/<destid>] : crea una nuova destinazione custom o modifica una esistente
+---------------------------------------------------------------------------------------------------
 
 i parametri del body sono:
 
@@ -442,6 +454,7 @@ risultato: ::
 
 
 DELETE /contatta/customdest/<destid> : elimina  una destinazione custom
+------------------------------------------------------------------------
 
 esempio: ::
 
@@ -453,6 +466,7 @@ risultato: ::
 
     
 GET /contatta/customdest[/<destid>] : ritorna tutte le destinazioni custom o solo quella con l'id specificato
+--------------------------------------------------------------------------------------------------------------
 
 esempio: ::
 
@@ -472,6 +486,69 @@ risultato: ::
         "dest": "app-blackhole,hangup,1"
       }
     }
+
+
+POST /contatta/setcid[/<id>] : crea un nuovo oggetto setcid o ne modifica uno esistente
+---------------------------------------------------------------------------------------
+
+i parametri del body sono:
+
+description
+
+cid_name
+
+cid_num
+
+destination
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/setcid' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"description":"Test 2","cid_name":"${CALLERID(name)}bar","cid_num":"${CALLERID(num)}4567","destination":"app-blackhole,hangup,1"}'
+
+risultato: ::
+
+    201 Created
+
+
+DELETE /contatta/setcid/<id>
+----------------------------
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/setcid/1' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' -X DELETE
+
+risultato: ::
+
+    204 No Content
+
+
+GET /contatta/setcid[/<id>]
+---------------------------
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/setcid' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
+
+risultato: ::
+
+    200 OK
+
+    [
+      {
+        "cid_id": "1",
+        "description": "test",
+        "cid_name": "Foo${CALLERID(name)}",
+        "cid_num": "${CALLERID(num)}1234",
+        "dest": "app-blackhole,musiconhold,1"
+      },
+      {
+        "cid_id": "2",
+        "description": "Test 2",
+        "cid_name": "${CALLERID(name)}bar",
+        "cid_num": "${CALLERID(num)}4567",
+        "dest": "app-blackhole,hangup,1"
+      }
+    ]
 
 
 Certificato
