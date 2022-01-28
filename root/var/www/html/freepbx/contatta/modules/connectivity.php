@@ -478,7 +478,7 @@ $app->post('/setcid[/{id}]', function (Request $request, Response $response, $ar
                 throw new Exception("Missing $p parameter");
             }
         }
-        $id = !empty($i) ? $id : null;
+        $id = !empty($id) ? $id : null;
         \FreePBX::Setcid()->update($id,$params['description'],$params['cid_name'],$params['cid_num'],$params['destination']);
 
         system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
