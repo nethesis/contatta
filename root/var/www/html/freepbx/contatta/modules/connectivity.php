@@ -421,8 +421,8 @@ $app->post('/customdest[/{destid}]', function (Request $request, Response $respo
                 $destid = 1;
             }
             $params['destid'] = $destid;
-            $custom->setConfig($destid++, $params, "dests");
-            $custom->setConfig("currentid", $destid);
+            $custom->setConfig($destid, $params, "dests");
+            $custom->setConfig("currentid", $destid+1);
         } else {
             $params['destid'] = $destid;
             $custom->setConfig($destid, $params, "dests");
