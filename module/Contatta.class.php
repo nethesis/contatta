@@ -142,17 +142,44 @@ class Contatta extends \FreePBX_Helpers implements \BMO
             $ext->add($context, $exten, 'agi', new \ext_agi('agi://${ARG2}/contatta_${ARG1}'));
 
             $context = 'makecall-contatta';
-            $exten = 'failed';
+			$exten = 'failed';
+
+			$ext->add($context, $exten, '', new \ext_set('AGIESEGUITO','true'));
             foreach (explode(',',$agiip) as $ip) {
-                $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip));
+                $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip.',${REASON}'));
             }
 
             //;Se risposta ok
             //;non risposta non entra
-            $exten = '_X!';
+			$exten = '_X!';
+
+			$ext->add($context, $exten, '', new \ext_gotoif('$["${AMD}" != "true"]','makecall'));
+
+			$ext->add($context, $exten, '', new \ext_set('ESTENSIONE','${EXTEN}'));
+
+			$ext->add($context, $exten, '', new \extension('WaitForNoise(300,1,3)'));
+			$ext->add($context, $exten, '', new \ext_gotoif('$["${WAITSTATUS}" != "TIMEOUT"]','predictive'));
+			$ext->add($context, $exten, '', new \ext_set('AMDSTATUS','HUMAN'));
+			$ext->add($context, $exten, '', new \ext_goto('makecall'));
+			$ext->add($context, $exten, 'predictive', new \extension('AMD()'));
+			$ext->add($context, $exten, 'makecall', new \ext_set('AGIESEGUITO','true'));
+
             foreach (explode(',',$agiip) as $ip) {
-                $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip));
-            }
+                $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip.',${AMDSTATUS}'));
+			}
+
+			$exten = 'h';
+
+			$ext->add($context, $exten, '', new \ext_noop('estensione ${ESTENSIONE}'));
+			$ext->add($context, $exten, '', new \ext_gotoif('$["${AGIESEGUITO}" == "true"]','fine'));
+			$ext->add($context, $exten, '', new \ext_set('CALLERID(num)','${ESTENSIONE}'));
+
+			foreach (explode(',',$agiip) as $ip) {
+                $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip.',HANGUP'));
+			}
+
+			$ext->add($context, $exten, 'fine', new \ext_noop('chiamata chiusa'));
+
 	}
 
 	// http://wiki.freepbx.org/pages/viewpage.action?pageId=29753755
