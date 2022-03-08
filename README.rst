@@ -37,12 +37,16 @@ Vengono esposte due API che consento la creazione e l'eliminazione di interni ap
 
 le API possono essere chiamate utilizzando una API KEY generata all'installazione del pacchetto e conservata nel file /var/lib/nethserver/secrets/contatta
 
+Valorizzare la variabile SecretKey per gli esempi: ::
 
-POST /freepbx/contatta/extension/<EXTENSION>  data: { 'context' : <CONTEXT>, 'secret' : <SECRET> }  : crea l'extension <EXTENSION> nel contesto <CONTEXT> e la password <SECRET> (il contesto di default se omesso è: "webcall" e la password se omessa viene generata casualmente) 
+    SecretKey=$(cat /var/lib/nethserver/secrets/contatta)
+
+POST /freepbx/contatta/extension/<EXTENSION>  data: { 'context' : <CONTEXT>, 'secret' : <SECRET> }  : crea l'extension <EXTENSION> nel contesto <CONTEXT> e la password <SECRET> (il contesto di default se omesso è: "webcall" e la password se omessa viene generata casualmente)
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 esempio: ::
 
-    curl 'https://192.168.122.75/freepbx/contatta/extension/405' -H 'Secretkey: _UL8Wsvl6lwHH63n' --data '' -kv
+    curl 'https://192.168.122.75/freepbx/contatta/extension/405' -H 'Secretkey: $SecretKey' --data '' -kv
 
 genera l'interno 405 nel contesto webcall e restituisce un json contenente eventuali errori o warning e il secret dell'interno: ::
 
@@ -58,10 +62,11 @@ genera l'interno 405 nel contesto webcall e restituisce un json contenente event
 NOTA: gli interni appartengono al contesto webcall e non possono chamare numeri deversi dagli agenti. Tuttavia se venissero modificati dall'interfaccia di FreePBX, il contesto verrebbe perso. Questi interni non vanno modificati dall'interfaccia di FreePBX ma solamente tramite le REST API
 
 DELETE /freepbx/contatta/extension/<EXTENSION> : elimina l'extension <EXTENSION>
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 esempio: ::
 
-    curl 'https://192.168.122.75/freepbx/contatta/extension/405' -H 'Secretkey: _UL8Wsvl6lwHH63n' -X DELETE -kv
+    curl 'https://192.168.122.75/freepbx/contatta/extension/405' -H 'Secretkey: $SecretKey' -X DELETE -kv
 
 elimina l'extension 405 e restituisce un json contenente eventuali errori o warning: ::
 
@@ -71,6 +76,480 @@ elimina l'extension 405 e restituisce un json contenente eventuali errori o warn
         "status": true,
         "warnings": []
     }
+
+GET /contatta/trunk : ritorna la lista dei fasci con i loro dettagli
+
+esempio: ::
+
+    curl -kv 'https://localhost/freepbx/contatta/trunk' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
+
+risultato: ::
+
+    200 OK
+
+    [
+      {
+          "trunkid": "1",
+          "tech": "pjsip",
+          "channelid": "Test trunk",
+          "name": "Test trunk",
+          "outcid": "",
+          "keepcid": "off",
+          "maxchans": "",
+          "failscript": "",
+          "dialoutprefix": "",
+          "usercontext": "",
+          "provider": "",
+          "disabled": "off",
+          "continue": "off",
+          "dialopts": false,
+          "username": "user"
+      },
+      ...
+    ]
+
+POST /contatta/trunk[/trunkid] : crea un nuovo fascio con i dati specificati nel body. Se si specifica il trunkid, questo verrà eliminato e ricreato con i dati del body
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+i parametri obbligatori sono:
+
+name
+
+outcid
+
+sipserver
+
+sipserverport
+
+context
+
+authentication inbound|outbound|both|off
+
+registration send|receive|none
+
+username
+
+secret
+
+contactuser
+
+fromdomain
+
+fromuser
+
+codecs
+
+Parametro acoltativo:
+
+disabled off|on - disabilita il fascio. Default off
+
+
+esempio: ::
+
+    curl -kv 'https://localhost/freepbx/contatta/trunk' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"name":"Test trunk","outcid":"","sipserver":"sip.foo.bar","sipserverport":"5060","context":"from-trunk","authentication":"outbound","registration":"send","username":"username","secret":"secret","contactuser":"zz","fromdomain":"sss","fromuser":"1234","codecs":[{"nome":"alaw","enabled":1,"position":1},{"nome":"ulaw","enabled":true,"position":2}]}'
+
+risultato: ::
+
+    200 OK
+
+    {"trunkid":6}
+
+
+POST /trunk/<trunkid>/disabled/<on|off> : abilita o disabilita il fascio specificato. "on" disabilita il fascio, "off" lo abilita.
+--------------------------------------------------------------------------------------------------------------------------------------
+
+esempio: ::
+
+    curl -kv 'https://localhost/freepbx/contatta/trunk/5/disabled/on' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' -X POST
+
+risultato: ::
+
+    204 No Content
+
+
+DELETE /contatta/trunk/<trunkid> : elimina il fascio specificato
+-----------------------------------------------------------------------------------------------
+
+esempio: ::
+
+    curl -kv 'https://localhost/freepbx/contatta/trunk/6' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;c -X DELETE-8'
+
+risultato: ::
+
+    204 No Content
+
+GET /contatta/inboundroute : restituisce la lista delle rotte in ingresso con i loro dettagli
+-----------------------------------------------------------------------------------------------
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/inboundroute' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
+
+risultato: ::
+
+    200 OK
+
+    [
+      {
+        "cidnum": "",
+        "extension": "",
+        "destination": "app-blackhole,hangup,1",
+        "privacyman": "0",
+        "alertinfo": "",
+        "ringing": "",
+        "fanswer": "",
+        "mohclass": "default",
+        "description": "Test Inbound",
+        "grppre": "",
+        "delay_answer": "0",
+        "pricid": "",
+        "pmmaxretries": "",
+        "pmminlength": "",
+        "reversal": "",
+        "rvolume": "",
+        "indication_zone": "default"
+      },
+      {
+        "cidnum": "1234",
+        "extension": "1245678",
+        "destination": "app-blackhole,hangup,1",
+        "privacyman": "0",
+        "alertinfo": "<http://www.notused.com>\\;info=ring2",
+        "ringing": "CHECKED",
+        "fanswer": "CHECKED",
+        "mohclass": "default",
+        "description": "ddd",
+        "grppre": "",
+        "delay_answer": "0",
+        "pricid": "",
+        "pmmaxretries": "",
+        "pmminlength": "",
+        "reversal": "",
+        "rvolume": "",
+        "indication_zone": "default"
+     }
+    ]
+
+POST /contatta/inboundroute : crea una nuova rotta in ingresso
+-----------------------------------------------------------------
+
+i parametri del body sono:
+
+cidnum
+
+description
+
+extension (did)
+
+destination
+
+fanswer (opzionale) default: ""
+
+delay_answer (opzionale) default: "0"
+
+rvolume (opzionale) default: ""
+
+privacyman (opzionale) default: "0"
+
+pmmaxretries (opzionale) default: ""
+
+pmminlength (opzionale) default: ""
+
+alertinfo (opzionale) default: ""
+
+ringing (opzionale) default: ""
+
+reversal (opzionale) default: ""
+
+mohclass (opzionale) default: "default"
+
+grppre (opzionale) default: ""
+
+pricid (opzionale) default: ""
+
+rnavsort (opzionale) default: "description"
+
+didfilter (opzionale) default: ""
+
+indication_zone (opzionale) default: "default"
+
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/inboundroute' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"cidnum":"","description":"Test Inbound","extension":"","destination":"app-blackhole,hangup,1"}'
+
+risultato: ::
+
+    200 OK
+
+    {
+      "cidnum": "",
+      "extension": "",
+      "destination": "app-blackhole,hangup,1",
+      "privacyman": "0",
+      "alertinfo": "",
+      "ringing": "",
+      "fanswer": "",
+      "mohclass": "default",
+      "description": "Test Inbound",
+      "grppre": "",
+      "delay_answer": "0",
+      "pricid": "",
+      "pmmaxretries": "",
+      "pmminlength": "",
+      "reversal": "",
+      "rvolume": "",
+      "indication_zone": "default"
+    }
+
+DELETE /contatta/inboundroute : elimina la rotta definita da cidnum ed extension che devono essere specificati nel body
+-------------------------------------------------------------------------------------------------------------------------
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/inboundroute' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"cidnum": "","extension": ""}' -X DELETE
+
+risultato: ::
+
+    204 No Content
+
+
+GET /contatta/outboundroute : restituisce la lista delle rotte in uscita con i loro dettagli
+----------------------------------------------------------------------------------------------
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/outboundroute' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
+
+risultato: ::
+
+    200 OK
+
+    [
+      {
+        "route_id": "11",
+        "name": "Test outbound route",
+        "outcid": "",
+        "outcid_mode": "",
+        "password": "",
+        "emergency_route": "",
+        "intracompany_route": "",
+        "mohclass": "default",
+        "time_group_id": null,
+        "dest": "",
+        "time_mode": "",
+        "calendar_id": null,
+        "calendar_group_id": null,
+        "timezone": "",
+        "seq": "5",
+        "trunks": [
+          "1",
+          "2"
+        ],
+        "patterns": [
+          {
+            "route_id": "11",
+            "match_pattern_prefix": "+39",
+            "match_pattern_pass": "0ZXXX.",
+            "match_cid": "",
+            "prepend_digits": ""
+          },
+          {
+            "route_id": "11",
+            "match_pattern_prefix": "0039",
+            "match_pattern_pass": "0ZXXX.",
+            "match_cid": "",
+            "prepend_digits": ""
+          }
+        ]
+      },
+      ...
+    ]
+
+POST /contatta/outboundroute[/<route_id>] :  crea una nuova rotta in uscita o modifica un rotta esistente se specificato il route_id
+--------------------------------------------------------------------------------------------------------------------------------------
+
+i parametri del body sono:
+
+name
+
+outcid (opzionale) default: ""
+
+outcid_mode (opzionale) default: ""
+
+password (opzionale) default: ""
+
+emergency_route (opzionale) default: ""
+
+intracompany_route (opzionale) default: ""
+
+mohclass (opzionale) default: "default"
+
+time_group_id (opzionale) default: NULL
+
+patterns (opzionale) default: ""
+
+trunks (opzionale) default: ""
+
+seq (opzionale) default: NULL
+
+dest (opzionale) default: ""
+
+time_mode (opzionale) default: ""
+
+timezone (opzionale) default: ""
+
+calendar_id (opzionale) default: ""
+
+calendar_group_id (opzionale) default: ""
+
+
+esempio: ::
+
+    curl -kv 'https://localhost/freepbx/contatta/outboundroute' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"name":"Test outbound route","patterns":[{"match_pattern_prefix":"+39", "match_pattern_pass":"0ZXXX.", "match_cid":"", "prepend_digits":""},{"match_pattern_prefix":"0039", "match_pattern_pass":"0ZXXX.", "match_cid":"", "prepend_digits":""}],"trunks":[1,2]}'
+
+risultato: ::
+
+    201 Created
+
+DELETE /contatta/outboundroute/<route_id> : elimina la rotta con id route_id
+-------------------------------------------------------------------------------
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/outboundroute/4' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' -X DELETE
+
+risultato: ::
+
+    204 No Content
+
+
+POST /contatta/customdest[/<destid>] : crea una nuova destinazione custom o modifica una esistente
+---------------------------------------------------------------------------------------------------
+
+i parametri del body sono:
+
+target - destinazione destinazione del dialplan
+
+description 
+
+notes 
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/customdest' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"target":"app-blackhole,hangup,1","description":"Hangup","notes":"This is a test"}'
+
+esempio2: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/customdest/1' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"target":"app-blackhole,hangup,1","description":"Hangup","notes":"This is an edit test"}'
+
+risultato: ::
+
+    200 OK
+
+    {
+      "destid":4
+    }
+
+
+
+DELETE /contatta/customdest/<destid> : elimina  una destinazione custom
+------------------------------------------------------------------------
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/customdest/1' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' -X DELETE
+
+risultato: ::
+
+    204 No Content
+
+    
+GET /contatta/customdest[/<destid>] : ritorna tutte le destinazioni custom o solo quella con l'id specificato
+--------------------------------------------------------------------------------------------------------------
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/customdest' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
+
+risultato: ::
+
+    200 OK
+
+    {
+      "1": {
+        "destid": "1",
+        "target": "app-blackhole,hangup,1",
+        "description": "Hangupf",
+        "notes": "This is a test",
+        "destret": "1",
+        "dest": "app-blackhole,hangup,1"
+      }
+    }
+
+
+POST /contatta/setcid[/<id>] : crea un nuovo oggetto setcid o ne modifica uno esistente
+---------------------------------------------------------------------------------------
+
+i parametri del body sono:
+
+description
+
+cid_name
+
+cid_num
+
+destination
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/setcid' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"description":"Test 2","cid_name":"${CALLERID(name)}bar","cid_num":"${CALLERID(num)}4567","destination":"app-blackhole,hangup,1"}'
+
+risultato: ::
+
+    201 Created
+
+
+DELETE /contatta/setcid/<id>
+----------------------------
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/setcid/1' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' -X DELETE
+
+risultato: ::
+
+    204 No Content
+
+
+GET /contatta/setcid[/<id>]
+---------------------------
+
+esempio: ::
+
+     curl -kv 'https://localhost/freepbx/contatta/setcid' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
+
+risultato: ::
+
+    200 OK
+
+    [
+      {
+        "cid_id": "1",
+        "description": "test",
+        "cid_name": "Foo${CALLERID(name)}",
+        "cid_num": "${CALLERID(num)}1234",
+        "dest": "app-blackhole,musiconhold,1"
+      },
+      {
+        "cid_id": "2",
+        "description": "Test 2",
+        "cid_name": "${CALLERID(name)}bar",
+        "cid_num": "${CALLERID(num)}4567",
+        "dest": "app-blackhole,hangup,1"
+      }
+    ]
+
 
 Certificato
 ===========
