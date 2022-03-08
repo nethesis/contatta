@@ -1,5 +1,5 @@
 Name: contatta
-Version: 0.0.14
+Version: 1.0.0
 Release: 1%{?dist}
 Summary: Rest API for FreePBX
 Group: Network
@@ -42,6 +42,16 @@ rm -rf %{buildroot}
 %doc
 
 %changelog
+* Tue Mar 08 2022 Stefano Fancello <stefano.fancello@nethesis.it> - 1.0.0-1
+- Add AMD to dialplan
+- Add SetCID APIS
+- Add customdest APIs
+- Add fields to GET /trunk and return route_id in POST /outboundroute
+- Add autentication and registration fields in README
+- Add POST /trunk/<trunkid>/disabled/<on|off>
+- Update README with new APIs documentation
+- Add additional APIs
+
 * Thu Jul 22 2021 Stefano Fancello <stefano.fancello@nethesis.it> - 0.0.14-1
 - Fix dialplan
 
