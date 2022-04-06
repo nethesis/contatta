@@ -56,6 +56,7 @@ $app->post('/trunk[/{trunkid}]', function (Request $request, Response $response,
     try {
         $route = $request->getAttribute('route');
         $name = $route->getArgument('name');
+        $trunkid = $route->getArgument('trunkid');
         $params = $request->getParsedBody();
 
         $dbh = FreePBX::Database();
