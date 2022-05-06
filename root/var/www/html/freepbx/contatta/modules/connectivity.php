@@ -194,7 +194,7 @@ $app->post('/trunk[/{trunkid}]', function (Request $request, Response $response,
             return $response->withStatus(500);
         }
 
-        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         return $response->withJson(["trunkid" => $trunkid], 200);
    } catch (Exception $e) {
        error_log($e->getMessage());
@@ -217,7 +217,7 @@ $app->post('/trunk/{trunkid}/disabled/{disabled:on|off}', function (Request $req
 		throw new Exception("error executing query $sql");
 	}
 
-        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         return $response->withStatus(204);
    } catch (Exception $e) {
        error_log($e->getMessage());
@@ -240,7 +240,7 @@ $app->delete('/trunk/{trunkid}', function (Request $request, Response $response,
         $sth = $dbh->prepare($sql);
         $sth->execute([$trunkid]);
 
-        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         return $response->withStatus(204);
     } catch (Exception $e) {
        error_log($e->getMessage());
@@ -287,7 +287,7 @@ $app->post('/inboundroute', function (Request $request, Response $response, $arg
             throw new Exception("Error creating DID");
         }
 
-        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         return $response->withJson($res, 200);
    } catch (Exception $e) {
        error_log($e->getMessage());
@@ -302,7 +302,7 @@ $app->delete('/inboundroute', function (Request $request, Response $response, $a
         $extension = $params['extension'];
         $cidnum = $params['cid'];
         FreePBX::Core()->delDID($extension, $cidnum ? $cidnum : '');
-        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         return $response->withStatus(204);
     } catch (Exception $e) {
        error_log($e->getMessage());
@@ -384,7 +384,7 @@ $app->post('/outboundroute[/{route_id}]', function (Request $request, Response $
         } else {
             $route_id = call_user_func_array('core_routing_addbyid',$parameters);
         }
-        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         return $response->withJson(["route_id" => $route_id],200);
    } catch (Exception $e) {
        error_log($e->getMessage());
@@ -399,7 +399,7 @@ $app->delete('/outboundroute/{route_id}', function (Request $request, Response $
         $route = $request->getAttribute('route');
         $route_id = $route->getArgument('route_id');
         core_routing_delbyid($route_id);
-        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         return $response->withStatus(204);
     } catch (Exception $e) {
        error_log($e->getMessage());
@@ -427,7 +427,7 @@ $app->post('/customdest[/{destid}]', function (Request $request, Response $respo
             $params['destid'] = $destid;
             $custom->setConfig($destid, $params, "dests");
         }
-        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         return $response->withJson(["destid" => $destid],200);
    } catch (Exception $e) {
        error_log($e->getMessage());
@@ -442,7 +442,7 @@ $app->delete('/customdest/{destid}', function (Request $request, Response $respo
         $destid = $route->getArgument('destid');
         $custom = \FreePBX::Customappsreg();
         $custom->setConfig($destid, false, "dests");
-        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         return $response->withStatus(204);
    } catch (Exception $e) {
        error_log($e->getMessage());
@@ -481,7 +481,7 @@ $app->post('/setcid[/{id}]', function (Request $request, Response $response, $ar
         $id = !empty($id) ? $id : null;
         \FreePBX::Setcid()->update($id,$params['description'],$params['cid_name'],$params['cid_num'],$params['destination']);
 
-        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         return $response->withStatus(201);
    } catch (Exception $e) {
        error_log($e->getMessage());
@@ -495,7 +495,7 @@ $app->delete('/setcid/{id}', function (Request $request, Response $response, $ar
         $route = $request->getAttribute('route');
         $id = $route->getArgument('id');
         \FreePBX::Setcid()->delete($id);
-        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         return $response->withStatus(204);
    } catch (Exception $e) {
        error_log($e->getMessage());

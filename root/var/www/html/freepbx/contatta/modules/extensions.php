@@ -40,7 +40,7 @@ $app->post('/extension/{extension}', function (Request $request, Response $respo
             return $response->withJson($res, 500);
         }
 
-        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         return $response->withJson($res, 200);
    } catch (Exception $e) {
        error_log($e->getMessage());
@@ -59,7 +59,7 @@ $app->delete('/extension/{extension}', function (Request $request, Response $res
         if ($res['status'] === false) {
             return $response->withJson($res, 500);
         }
-        system('/var/www/html/freepbx/contatta/lib/retrieveHelper.sh > /dev/null &');
+        system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         return $response->withJson($res, 200);
     } catch (Exception $e) {
        error_log($e->getMessage());
