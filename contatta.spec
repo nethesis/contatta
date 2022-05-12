@@ -1,5 +1,5 @@
 Name: contatta
-Version: 1.0.0
+Version: 1.1.0
 Release: 1%{?dist}
 Summary: Rest API for FreePBX
 Group: Network
@@ -42,6 +42,17 @@ rm -rf %{buildroot}
 %doc
 
 %changelog
+* Thu May 12 2022 Stefano Fancello <stefano.fancello@nethesis.it> - 1.1.0-1
+- Merge pull request #9 from nethesis/trunk_id
+- Merge pull request #10 from nethesis/Stell0-patch-1
+- Merge pull request #11 from nethesis/retrieve
+- Merge pull request #12 from nethesis/contactuser
+- Add requires for g729 package
+- Fix contacuser always null returned by trunks GET
+- Use default retrieveHelper.sh instead of custom ones
+- Delete codec_g729.so
+- Overwrite trunk if id is specified
+
 * Tue Mar 08 2022 Stefano Fancello <stefano.fancello@nethesis.it> - 1.0.0-1
 - Add AMD to dialplan
 - Add SetCID APIS
