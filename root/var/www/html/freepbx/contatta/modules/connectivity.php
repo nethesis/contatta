@@ -33,9 +33,10 @@ $app->get('/trunk', function (Request $request, Response $response, $args) {
             $trunk['sipserverport'] = $details['sip_server_port'];
             $trunk['fromdomain'] = $details['from_domain'];
             $trunk['fromuser'] = $details['from_user'];
-            foreach (['username','context','authentication','registration','username','secret','contactuser'] as $prop) {
+            foreach (['username','context','authentication','registration','username','secret'] as $prop) {
                 $trunk[$prop] = $details[$prop];
             }
+            $trunk['contactuser'] = $details['contact_user'];
             $codecs = [];
             $i = 0;
             foreach (explode(',',$details['codecs']) as $cname) {
