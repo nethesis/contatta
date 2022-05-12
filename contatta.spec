@@ -8,7 +8,7 @@ Source0: %{name}-%{version}.tar.gz
 Source1: contatta.tar.gz
 BuildRequires: nethserver-devtools, gettext
 Buildarch: x86_64
-Requires: nethserver-freepbx, nethserver-samba, lame
+Requires: nethserver-freepbx, nethserver-samba, lame, asterisk-codecs-g729
 
 %description
 Rest API for FreePBX
