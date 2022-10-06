@@ -137,9 +137,14 @@ class Contatta extends \FreePBX_Helpers implements \BMO
 
             $context = 'macro-contatta';
             $exten = 's';
-            $ext->add($context, $exten, '', new \ext_gotoif('$["${fileWaveAgent}" = ""]','agi'));
-            $ext->add($context, $exten, '', new \ext_background('${fileWaveAgent}'));
-            $ext->add($context, $exten, 'agi', new \ext_agi('agi://${ARG2}/contatta_${ARG1}'));
+
+	    $ext->add($context, $exten, '', new \ext_gotoif('$["${fileWaveAgent}" = ""]','rec'));
+	    $ext->add($context, $exten, '', new \ext_background('${fileWaveAgent}'));
+            $ext->add($context, $exten, 'rec', new \ext_gotoif('$["${ARG3}" = ""]','agi'));
+	    //mixmon
+	    $ext->add($context, $exten, '', new \ext_mixmonitor('','br(${ARG3}_r.wav)t(${ARG3}_t.wav)','${MONITOR_EXEC} ${ARG3}_r.wav ${ARG3}_t.wav ${ARG3}'));
+	    $ext->add($context, $exten, '', new \ext_set('MONITORED','true'));
+            $ext->add($context, $exten, 'agi', new \ext_agi('agi://${ARG2}/contatta_${ARG1}/record_${MONITORED}'));
 
             $context = 'makecall-contatta';
 			$exten = 'failed';
