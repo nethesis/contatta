@@ -1,5 +1,5 @@
 Name: contatta
-Version: 1.1.0
+Version: 1.1.1
 Release: 1%{?dist}
 Summary: Rest API for FreePBX
 Group: Network
@@ -42,6 +42,11 @@ rm -rf %{buildroot}
 %doc
 
 %changelog
+* Fri Oct 07 2022 Stefano Fancello <stefano.fancello@nethesis.it> - 1.1.1-1
+- Merge pull request #13 from hoverflow/contatta-mod-202210a
+- added another option to the monitor exec combobox
+- dialplan updated
+
 * Thu May 12 2022 Stefano Fancello <stefano.fancello@nethesis.it> - 1.1.0-1
 - Merge pull request #9 from nethesis/trunk_id
 - Merge pull request #10 from nethesis/Stell0-patch-1
