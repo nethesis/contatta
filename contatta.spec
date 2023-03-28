@@ -1,5 +1,5 @@
 Name: contatta
-Version: 1.1.1
+Version: 1.1.2
 Release: 1%{?dist}
 Summary: Rest API for FreePBX
 Group: Network
@@ -42,6 +42,9 @@ rm -rf %{buildroot}
 %doc
 
 %changelog
+* Tue Mar 28 2023 Stefano Fancello <stefano.fancello@nethesis.it> - 1.1.2-1
+- Take trunk credentials from input
+
 * Fri Oct 07 2022 Stefano Fancello <stefano.fancello@nethesis.it> - 1.1.1-1
 - Merge pull request #13 from hoverflow/contatta-mod-202210a
 - added another option to the monitor exec combobox
