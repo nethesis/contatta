@@ -163,7 +163,7 @@ $app->post('/trunk[/{trunkid}]', function (Request $request, Response $response,
             "retry_interval" => "60",
             "rewrite_contact" => "yes",
             "rtp_symmetric" => "yes",
-            "secret" => "secret",
+            "secret" => $params['secret'],
             "sendrpid" => "no",
             "server_uri" => "",
             "sip_server" =>  $params['sipserver'],
@@ -180,7 +180,7 @@ $app->post('/trunk[/{trunkid}]', function (Request $request, Response $response,
             "trust_rpid" => "no",
             "trunk_name" => $params['name'],
             "userconfig" => "",
-            "username" => "username",
+            "username" => $params['username'],
         );
 
         $insert_data = array();
