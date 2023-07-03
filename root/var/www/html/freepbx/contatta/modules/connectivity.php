@@ -522,3 +522,56 @@ try {
    }
 });
 
+$app->get('/predictive', function (Request $request, Response $response, $args) {
+try {
+        // Controllo se è un test
+	if ($_GET['test'] == 'Y'){
+            return $response->withJson('Ok', 200);
+        }
+
+	$channel =  $_GET['channel'];
+	$context =  $_GET['context'];
+	$extension =  $_GET['extension'];
+	$wait =  $_GET['wait'];
+	$caller =  urldecode($_GET['caller']);
+
+	$chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+	$count = strlen($chars);
+	$bytes = random_bytes(12);
+	$nRandom = '';
+	$result = '';
+	foreach (str_split($bytes) as $byte) {
+		$nRandom .= $chars[ord($byte) % $count];
+	}
+
+	$nomefile = $nRandom .".call";
+
+	$result = "nome=". $nomefile;
+	$file = fopen("/var/spool/asterisk/outgoing/". $nomefile, "w");
+	$chiamata =  "Channel: {$channel}\n";
+	$chiamata .= "Context: {$context}\n";		
+	$chiamata .= "Extension: {$extension}\n";
+	$chiamata .= "Priority: 1\n"; 	
+	$chiamata .= "WaitTime: {$wait}\n"; 	
+	$chiamata .= "CallerID: {$caller}\n";	
+	if(isset($_GET['AMD'])) {
+	  if($_GET['AMD'] == "true") {
+	    $chiamata .= "Setvar: AMD=true\n";
+	    $result .= " AMD=true";
+	  }
+	}
+	else {
+	  $result .= "\nAMD=false";
+	}
+	$chiamata .= "MaxRetries: 0";
+
+	fwrite($file, $chiamata);
+	fclose($file);
+
+        return $response->withJson($result, 200);
+
+    } catch (Exception $e) {
+      error_log($e->getMessage());
+      return $response->withJson('An error occurred', 500);
+    }
+});
