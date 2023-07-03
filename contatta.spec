@@ -1,5 +1,5 @@
 Name: contatta
-Version: 1.1.2
+Version: 1.2.0
 Release: 1%{?dist}
 Summary: Rest API for FreePBX
 Group: Network
@@ -42,6 +42,9 @@ rm -rf %{buildroot}
 %doc
 
 %changelog
+* Mon Jul 03 2023 Stefano Fancello <stefano.fancello@nethesis.it> - 1.2.0-1
+- predictive added to the webservice
+
 * Tue Mar 28 2023 Stefano Fancello <stefano.fancello@nethesis.it> - 1.1.2-1
 - Take trunk credentials from input
 
