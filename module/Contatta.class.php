@@ -131,6 +131,14 @@ class Contatta extends \FreePBX_Helpers implements \BMO
                 $ext->add($context, $exten, '', new \ext_agi('agi://'.$ip));
             }
 
+	    $exten = "_85020.";
+            $ext->add($context, $exten, '', new \ext_noop('attivo registrazione'));
+            $ext->add($context, $exten, '', new \ext_set('NUMERO_CHIAMATO','${EXTEN:5}'));
+            $ext->add($context, $exten, '', new \ext_set('NAME_FILE','${PJSIP_HEADER(read,X-Elly-Rec)}'));
+            $ext->add($context, $exten, '', new \ext_mixmonitor('','br(${NAME_FILE}_r.wav)t(${NAME_FILE}_t.wav)','${MONITOR_EXEC} ${NAME$
+            $ext->add($context, $exten, '', new \ext_goto('1','${NUMERO_CHIAMATO}','from-internal'));
+
+
             $context = 'webcall';
             $exten = '_89XXX';
             $ext->add($context, $exten, '', new \ext_goto('contatta,81${EXTEN:-3},1'));
