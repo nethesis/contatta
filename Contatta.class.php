@@ -29,6 +29,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
                 $this->setConfig('ami','0');
                 $this->setConfig('amipassword',$this->password());
             }
+			$this->generateLink();
 	}
 	public function uninstall()
 	{
@@ -42,6 +43,15 @@ class Contatta extends \FreePBX_Helpers implements \BMO
 	public function restore($backup)
 	{
 	}
+
+	public function generateLink()
+  	{
+    		$path = \FreePBX::Config()->get_conf_setting('AMPWEBROOT');
+    		$location = $path. '/contatta';
+    		if (!file_exists($location)) {
+        		symlink(dirname(__FILE__). '/htdocs', $location);
+    		}
+  	}
 
 	// http://wiki.freepbx.org/display/FOP/BMO+Hooks#BMOHooks-HTTPHooks(ConfigPageInits)
 	//
