@@ -44,14 +44,14 @@ le API possono essere chiamate utilizzando una API KEY generata all'installazion
 
 Valorizzare la variabile SecretKey per gli esempi: ::
 
-    SecretKey=$(cat /var/lib/nethserver/secrets/contatta)
+    SecretKey=$(php -r 'include "/etc/freepbx.conf";print(FreePBX::Contatta()->getConfig("secretkey"));')
 
 POST /freepbx/contatta/extension/<EXTENSION>  data: { 'context' : <CONTEXT>, 'secret' : <SECRET> }  : crea l'extension <EXTENSION> nel contesto <CONTEXT> e la password <SECRET> (il contesto di default se omesso è: "webcall" e la password se omessa viene generata casualmente)
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 esempio: ::
 
-    curl 'https://192.168.122.75/freepbx/contatta/extension/405' -H 'Secretkey: $SecretKey' --data '' -kv
+    curl -Lkv "https://$HOSTNAME/freepbx/contatta/extension/405" -H "Secretkey: $SecretKey" --data ''
 
 genera l'interno 405 nel contesto webcall e restituisce un json contenente eventuali errori o warning e il secret dell'interno: ::
 
@@ -71,7 +71,7 @@ DELETE /freepbx/contatta/extension/<EXTENSION> : elimina l'extension <EXTENSION>
 
 esempio: ::
 
-    curl 'https://192.168.122.75/freepbx/contatta/extension/405' -H 'Secretkey: $SecretKey' -X DELETE -kv
+    curl -Lkv "https://$HOSTNAME/freepbx/contatta/extension/405" -H "Secretkey: $SecretKey" -X DELETE 
 
 elimina l'extension 405 e restituisce un json contenente eventuali errori o warning: ::
 
@@ -86,7 +86,7 @@ GET /contatta/trunk : ritorna la lista dei fasci con i loro dettagli
 
 esempio: ::
 
-    curl -kv 'https://localhost/freepbx/contatta/trunk' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
+    curl -Lkv "https://$HOSTNAME/freepbx/contatta/trunk" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
 
 risultato: ::
 
@@ -151,7 +151,7 @@ disabled off|on - disabilita il fascio. Default off
 
 esempio: ::
 
-    curl -kv 'https://localhost/freepbx/contatta/trunk' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"name":"Test trunk","outcid":"","sipserver":"sip.foo.bar","sipserverport":"5060","context":"from-trunk","authentication":"outbound","registration":"send","username":"username","secret":"secret","contactuser":"zz","fromdomain":"sss","fromuser":"1234","codecs":[{"nome":"alaw","enabled":1,"position":1},{"nome":"ulaw","enabled":true,"position":2}]}'
+    curl -Lkv "https://$HOSTNAME/freepbx/contatta/trunk" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"name":"Test trunk","outcid":"","sipserver":"sip.foo.bar","sipserverport":"5060","context":"from-trunk","authentication":"outbound","registration":"send","username":"username","secret":"secret","contactuser":"zz","fromdomain":"sss","fromuser":"1234","codecs":[{"nome":"alaw","enabled":1,"position":1},{"nome":"ulaw","enabled":true,"position":2}]}'
 
 risultato: ::
 
@@ -165,7 +165,7 @@ POST /trunk/<trunkid>/disabled/<on|off> : abilita o disabilita il fascio specifi
 
 esempio: ::
 
-    curl -kv 'https://localhost/freepbx/contatta/trunk/5/disabled/on' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' -X POST
+    curl -Lkv "https://$HOSTNAME/freepbx/contatta/trunk/5/disabled/on" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' -X POST
 
 risultato: ::
 
@@ -177,7 +177,7 @@ DELETE /contatta/trunk/<trunkid> : elimina il fascio specificato
 
 esempio: ::
 
-    curl -kv 'https://localhost/freepbx/contatta/trunk/6' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;c -X DELETE-8'
+    curl -Lkv "https://$HOSTNAME/freepbx/contatta/trunk/6" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;c -X DELETE-8'
 
 risultato: ::
 
@@ -188,7 +188,7 @@ GET /contatta/inboundroute : restituisce la lista delle rotte in ingresso con i 
 
 esempio: ::
 
-     curl -kv 'https://localhost/freepbx/contatta/inboundroute' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
+     curl -Lkv "https://$HOSTNAME/freepbx/contatta/inboundroute" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
 
 risultato: ::
 
@@ -281,7 +281,7 @@ indication_zone (opzionale) default: "default"
 
 esempio: ::
 
-     curl -kv 'https://localhost/freepbx/contatta/inboundroute' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"cidnum":"","description":"Test Inbound","extension":"","destination":"app-blackhole,hangup,1"}'
+     curl -Lkv "https://$HOSTNAME/freepbx/contatta/inboundroute" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"cidnum":"","description":"Test Inbound","extension":"","destination":"app-blackhole,hangup,1"}'
 
 risultato: ::
 
@@ -312,7 +312,7 @@ DELETE /contatta/inboundroute : elimina la rotta definita da cidnum ed extension
 
 esempio: ::
 
-     curl -kv 'https://localhost/freepbx/contatta/inboundroute' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"cidnum": "","extension": ""}' -X DELETE
+     curl -Lkv "https://$HOSTNAME/freepbx/contatta/inboundroute" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"cidnum": "","extension": ""}' -X DELETE
 
 risultato: ::
 
@@ -324,7 +324,7 @@ GET /contatta/outboundroute : restituisce la lista delle rotte in uscita con i l
 
 esempio: ::
 
-     curl -kv 'https://localhost/freepbx/contatta/outboundroute' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
+     curl -Lkv "https://$HOSTNAME/freepbx/contatta/outboundroute" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
 
 risultato: ::
 
@@ -411,7 +411,7 @@ calendar_group_id (opzionale) default: ""
 
 esempio: ::
 
-    curl -kv 'https://localhost/freepbx/contatta/outboundroute' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"name":"Test outbound route","patterns":[{"match_pattern_prefix":"+39", "match_pattern_pass":"0ZXXX.", "match_cid":"", "prepend_digits":""},{"match_pattern_prefix":"0039", "match_pattern_pass":"0ZXXX.", "match_cid":"", "prepend_digits":""}],"trunks":[1,2]}'
+    curl -Lkv "https://$HOSTNAME/freepbx/contatta/outboundroute" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"name":"Test outbound route","patterns":[{"match_pattern_prefix":"+39", "match_pattern_pass":"0ZXXX.", "match_cid":"", "prepend_digits":""},{"match_pattern_prefix":"0039", "match_pattern_pass":"0ZXXX.", "match_cid":"", "prepend_digits":""}],"trunks":[1,2]}'
 
 risultato: ::
 
@@ -422,7 +422,7 @@ DELETE /contatta/outboundroute/<route_id> : elimina la rotta con id route_id
 
 esempio: ::
 
-     curl -kv 'https://localhost/freepbx/contatta/outboundroute/4' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' -X DELETE
+     curl -Lkv "https://$HOSTNAME/freepbx/contatta/outboundroute/4" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' -X DELETE
 
 risultato: ::
 
@@ -442,11 +442,11 @@ notes
 
 esempio: ::
 
-     curl -kv 'https://localhost/freepbx/contatta/customdest' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"target":"app-blackhole,hangup,1","description":"Hangup","notes":"This is a test"}'
+     curl -Lkv "https://$HOSTNAME/freepbx/contatta/customdest" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"target":"app-blackhole,hangup,1","description":"Hangup","notes":"This is a test"}'
 
 esempio2: ::
 
-     curl -kv 'https://localhost/freepbx/contatta/customdest/1' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"target":"app-blackhole,hangup,1","description":"Hangup","notes":"This is an edit test"}'
+     curl -Lkv "https://$HOSTNAME/freepbx/contatta/customdest/1" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"target":"app-blackhole,hangup,1","description":"Hangup","notes":"This is an edit test"}'
 
 risultato: ::
 
@@ -463,7 +463,7 @@ DELETE /contatta/customdest/<destid> : elimina  una destinazione custom
 
 esempio: ::
 
-     curl -kv 'https://localhost/freepbx/contatta/customdest/1' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' -X DELETE
+     curl -Lkv "https://$HOSTNAME/freepbx/contatta/customdest/1" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' -X DELETE
 
 risultato: ::
 
@@ -475,7 +475,7 @@ GET /contatta/customdest[/<destid>] : ritorna tutte le destinazioni custom o sol
 
 esempio: ::
 
-     curl -kv 'https://localhost/freepbx/contatta/customdest' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
+     curl -Lkv "https://$HOSTNAME/freepbx/contatta/customdest" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
 
 risultato: ::
 
@@ -508,7 +508,7 @@ destination
 
 esempio: ::
 
-     curl -kv 'https://localhost/freepbx/contatta/setcid' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"description":"Test 2","cid_name":"${CALLERID(name)}bar","cid_num":"${CALLERID(num)}4567","destination":"app-blackhole,hangup,1"}'
+     curl -Lkv "https://$HOSTNAME/freepbx/contatta/setcid" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' --data '{"description":"Test 2","cid_name":"${CALLERID(name)}bar","cid_num":"${CALLERID(num)}4567","destination":"app-blackhole,hangup,1"}'
 
 risultato: ::
 
@@ -520,7 +520,7 @@ DELETE /contatta/setcid/<id>
 
 esempio: ::
 
-     curl -kv 'https://localhost/freepbx/contatta/setcid/1' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' -X DELETE
+     curl -Lkv "https://$HOSTNAME/freepbx/contatta/setcid/1" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' -X DELETE
 
 risultato: ::
 
@@ -532,7 +532,7 @@ GET /contatta/setcid[/<id>]
 
 esempio: ::
 
-     curl -kv 'https://localhost/freepbx/contatta/setcid' -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
+     curl -Lkv "https://$HOSTNAME/freepbx/contatta/setcid" -H 'Accept: application/json, text/plain, */*' -H 'User: admin' -H "Secretkey: $SecretKey" -H 'Content-Type: application/json;charset=utf-8' | jq
 
 risultato: ::
 
