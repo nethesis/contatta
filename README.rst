@@ -11,11 +11,16 @@ Questo repository contiene l'integrazione Contatta-NethServer, in particolare:
 Installazione
 ==============
 
-Installare l'RPM di contatta: ::
+Accedere all'istanza di NethVoice su NethServer 8 (istanza #1 nell'esempio)
 
-    yum install contatta-*.ns7.noarch.rpm
+    runagent -m nethvoice1
 
-Raggiungere l'interfaccia del modulo di FreePBX all'indirizzo https://IP/freepbx/admin/config.php?display=contatta
+Installare il modulo di Contatta e riavviare il container di FreePBX
+
+	curl -L https://github.com/nethesis/contatta/archive/refs/heads/ns8.tar.gz -o ../freepbx_custom_modules/contatta.tar.gz
+	systemctl --user restart freepbx
+
+Raggiungere l'interfaccia del modulo di FreePBX all'indirizzo https://VIRTUALHOST/freepbx/admin/config.php?display=contatta
 
 Configurazione
 ==============

@@ -22,12 +22,6 @@
 
 class AuthMiddleware
 {
-    private $secret = NULL;
-
-    public function __construct($secret) {
-        $this->secret = $secret;
-    }
-
     /**
      * Authentication middleware invokable class
      *
@@ -42,7 +36,8 @@ class AuthMiddleware
         if ($request->isOptions()) {
             $response = $next($request, $response);
         }
-        if (!$request->hasHeader('Secretkey') || ($request->hasHeader('Secretkey') && ($request->getHeaderLine('Secretkey') !== $this->secret))) {
+		$secret = FreePBX::Contatta()->getConfig('secretkey');
+        if (!$request->hasHeader('Secretkey') || ($request->hasHeader('Secretkey') && ($request->getHeaderLine('Secretkey') !== $secret))) {
             return $response->withJson(['error' => 'Forbidden: wrong secret key'], 403);
         } else {
             $response = $next($request, $response);

@@ -29,6 +29,9 @@ class Contatta extends \FreePBX_Helpers implements \BMO
                 $this->setConfig('ami','0');
                 $this->setConfig('amipassword',$this->password());
             }
+			if (!$this->getConfig('secretkey')) {
+				$this->setConfig('secretkey', $this->password());
+			}
 			$this->generateLink();
 	}
 	public function uninstall()
@@ -40,6 +43,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
 	public function backup()
 	{
 	}
+
 	public function restore($backup)
 	{
 	}
