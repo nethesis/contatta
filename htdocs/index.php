@@ -41,7 +41,7 @@ require_once '/etc/freepbx.conf';
 # Load middleware classess
 require('lib/AuthMiddleware.php');
 
-$app = new \Slim\App($config);
+$app = new \Slim\App();
 
 # Add authentication
 $app->add(new AuthMiddleware());
