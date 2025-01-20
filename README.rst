@@ -17,7 +17,7 @@ Accedere all'istanza di NethVoice su NethServer 8 (istanza #1 nell'esempio)
 
 Installare il modulo di Contatta e riavviare il container di FreePBX
 
-	curl -L https://github.com/nethesis/contatta/archive/refs/heads/ns8.tar.gz -o ../freepbx_custom_modules/contatta.tar.gz
+	curl -L https://github.com/nethesis/contatta/archive/refs/heads/ns8.tar.gz -o ./freepbx_custom_modules/contatta.tar.gz
 	systemctl --user restart freepbx
 
 Raggiungere l'interfaccia del modulo di FreePBX all'indirizzo https://VIRTUALHOST/freepbx/admin/config.php?display=contatta
