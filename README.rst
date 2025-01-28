@@ -22,6 +22,29 @@ Installare il modulo di Contatta e riavviare il container di FreePBX
 
 Raggiungere l'interfaccia del modulo di FreePBX all'indirizzo https://VIRTUALHOST/freepbx/admin/config.php?display=contatta
 
+
+Abilitare sftp
+--------------
+
+Dopo aver effettuato l'accesso all'istanza di nethvoice 
+
+    runagent -m nethvoice1
+
+Per abilitare il server sftp lanciare il comando
+
+    systemctl --user enable --now sftp.service
+
+Il server sftp sarà raggiungibile alla porta $ASTERISK_RECORDING_SFTP_PORT
+
+    echo $ASTERISK_RECORDING_SFTP_PORT
+
+utilizzando l'utente asterisk e la password dell'interfaccia di NethVoice.
+
+Scaricare le registrazioni con il comando 
+
+    scp -rP${ASTERISK_RECORDING_SFTP_PORT} asterisk@localhost:moh/ ./
+
+
 Configurazione
 ==============
 
