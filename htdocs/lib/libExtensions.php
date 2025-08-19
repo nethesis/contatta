@@ -108,7 +108,7 @@ function createExtension($extension,$secret,$context = 'webcall'){
         $sth = $dbh->prepare($sql);
         $res = $sth->execute(array($extension));
 
-        return array('status' => true, 'errors'=> $errors, 'warnings' => $warnings, 'infos' => $infos, 'extension' => $extension, 'secret' => $secret);
+        return array('status' => true, 'errors'=> $errors, 'warnings' => $warnings, 'infos' => $infos, 'extension' => $extension, 'secret' => $secret, 'port' => $_ENV['ASTERISK_WSS_PORT']);
     } catch (Exception $e) {
        error_log($e->getMessage());
        $errors[] = $e->getMessage();
