@@ -103,6 +103,7 @@ function createExtension($extension,$secret,$context = 'webcall'){
         contattaWriteSipTableData($extension,"rtcp_mux","yes");
 
         // Enable DTLS, DTLS verify, DTLS Setup
+        contattaWriteSipTableData($extension,"media_encryption","dtls");
         $sql = "INSERT INTO `certman_mapping` (`id`, `cid`, `verify`, `setup`, `rekey`) VALUES (?,1,'no','actpass',0)";
         $sth = $dbh->prepare($sql);
         $res = $sth->execute(array($extension));
