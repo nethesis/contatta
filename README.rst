@@ -645,3 +645,7 @@ Rest API
 - Tutti i cambiamenti apportati dalle funzioni di FreePBX vengono salvati sul database mysql di FreePBX (database asterisk) e vengono effettivamente scritte nei file di configurazione di Asterisk quando da interfaccia viene premuto il tasto "Applica cambiamenti". Nel caso delle API, i cambiamenti vengono applicati dallo script /var/www/html/freepbx/contatta/lib/retrieveHelper.sh
 
 
+SBOM e aggiornamento delle dipendenze
+---------------------------------------
+
+La lista delle dipendenze viene effettuata automaticamente ai nuovi push sul branch ns8. Renovate propone gli aggiornamenti delle dipendenze, ma in mancanza di test automatici, il merge delle patch resta manuale
