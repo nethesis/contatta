@@ -26,6 +26,10 @@ $app->get('/trunk', function (Request $request, Response $response, $args) {
     try {
         $result = array();
         $trunks = FreePBX::Core()->listTrunks();
+        $nethcti3 = FreePBX::Nethcti3();
+
+        $nethserverVersion = $request->getQueryParam('nsversion', '7');
+
         foreach($trunks as $trunk) {
             // Get trunk username
             $details = FreePBX::Core()->getTrunkDetails($trunk['trunkid']);
@@ -43,6 +47,22 @@ $app->get('/trunk', function (Request $request, Response $response, $args) {
                  $codecs[] = ["nome"=>$cname,"enabled"=>true,"position"=>++$i];
             }
             $trunk['codecs'] = $codecs;
+            $trunk['outboundproxy'] = $details['outbound_proxy'];
+            $trunk['rtpsymmetric'] = $details['rtp_symmetric'] == "yes";
+            $trunk['clienturi'] = $details['client_uri'];
+            $trunk['serveruri'] = $details['server_uri'];
+            $trunk['aor'] = $details['aors'];
+            $trunk['aorcontact'] = $details['aor_contact'];
+            if ($details['transport'] == '0.0.0.0-udp') {
+                $trunk['transport'] = 'udp';
+            } else if ($details['transport'] == '0.0.0.0-tls') {
+                $trunk['transport'] = 'tls';
+            } else {
+                $trunk['transport'] = 'udp';
+            }
+            if ($nethserverVersion == '8'){
+                $trunk['disablesrtpproxyheader'] = (bool)$nethcti3->getConfig('disable_srtp_header', $trunk['trunkid']);
+            }
             array_push($result, $trunk);
         }
         return $response->withJson($result,200);
@@ -62,7 +82,8 @@ $app->post('/trunk[/{trunkid}]', function (Request $request, Response $response,
 
         $dbh = FreePBX::Database();
 
-        $body_parameters = ['name','outcid','sipserver','sipserverport','context','authentication','registration','username','secret','contactuser','fromdomain','fromuser','codecs'];
+        $body_parameters = ['name','outcid','sipserver','sipserverport','context','authentication','registration','username','secret','contactuser','fromdomain','fromuser','codecs',
+            'outboundproxy','rtpsymmetric','clienturi','serveruri','aor','aorcontact','transport','nsversion'];
         foreach ($body_parameters as $p) {
             if (!isset($params[$p])) {
                 throw new Exception("Missing $p parameter");
@@ -121,12 +142,21 @@ $app->post('/trunk[/{trunkid}]', function (Request $request, Response $response,
         foreach ($params['codecs'] as $c) {
             if ($c['enabled']) $codecs[] = $c['nome'];
         }
+
+        if ($params['transport'] == 'udp') {
+            $transport = '0.0.0.0-udp';
+        } else if ($params['transport'] == 'tls') {
+            $transport = '0.0.0.0-tls';
+        } else {
+            throw new Exception("transport not supported");
+        }
+
         $pjsip_data = array(
-            "aor_contact" => "",
-            "aors" => "",
+            "aor_contact" => $params['aorcontact'],
+            "aors" => $params['aor'],
             "auth_rejection_permanent" => "off",
             "authentication" => $params['authentication'],
-            "client_uri" => "",
+            "client_uri" => $params['clienturi'],
             "codecs" => implode(',',$codecs),
             "contact_user" => $params['contactuser'],
             "context" => $params['context'],
@@ -155,17 +185,17 @@ $app->post('/trunk[/{trunkid}]', function (Request $request, Response $response,
             "media_encryption" => "no",
             "message_context" => "",
             "npanxx" => "",
-            "outbound_proxy" => "",
+            "outbound_proxy" => $params['outboundproxy'],
             "peerdetails" => "",
             "qualify_frequency" => "60",
             "register" => "",
             "registration" => $params['registration'],
             "retry_interval" => "60",
             "rewrite_contact" => "yes",
-            "rtp_symmetric" => "yes",
+            "rtp_symmetric" => $params['rtpsymmetric'] == "True" ? "yes" : "no",
             "secret" => $params['secret'],
             "sendrpid" => "no",
-            "server_uri" => "",
+            "server_uri" => $params['serveruri'],
             "sip_server" =>  $params['sipserver'],
             "sip_server_port" => $params['sipserverport'],
             "support_path" => "no",
@@ -176,7 +206,7 @@ $app->post('/trunk[/{trunkid}]', function (Request $request, Response $response,
             "t38_udptl_ec" => "none",
             "t38_udptl_maxdatagram" => "",
             "t38_udptl_nat" => "no",
-            "transport" => "0.0.0.0-udp",
+            "transport" => $transport,
             "trust_rpid" => "no",
             "trunk_name" => $params['name'],
             "userconfig" => "",
@@ -194,6 +224,17 @@ $app->post('/trunk[/{trunkid}]', function (Request $request, Response $response,
         $res = $sth->execute($insert_data);
         if (!$res) {
             return $response->withStatus(500);
+        }
+
+        if ($params['nsversion'] == "8"){
+            if (array_key_exists('disablesrtpproxyheader', $params)) {
+                $nethcti3 = FreePBX::Nethcti3();
+                $disableSrtpRaw = $params['disablesrtpproxyheader'];
+                $disableSrtp = in_array($disableSrtpRaw, [true, 1, '1', 'true', 'yes', 'True'], true) ? 1 : 0;
+                $nethcti3->setConfig('disable_srtp_header', $disableSrtp, $trunkid);
+            } else {
+                throw new Exception("disablesrtpproxyheader parameter");
+            }
         }
 
         system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
@@ -267,6 +308,14 @@ $app->post('/inboundroute', function (Request $request, Response $response, $arg
         $settings = $request->getParsedBody();
         $dbh = FreePBX::Database();
 
+        $changed = true;
+        $reload = true;
+
+        if (isset($settings['reload'])) {
+            $reload = in_array($settings['reload'], array(true, 1, '1', 'true', 'True', 'yes', 'Yes'), true);
+            unset($settings['reload']);
+        }
+
         $body_parameters = ['cidnum','description','extension','destination'];
         foreach ($body_parameters as $p) {
             if (!isset($settings[$p])) {
@@ -274,28 +323,50 @@ $app->post('/inboundroute', function (Request $request, Response $response, $arg
             }
         }
 
-        $old = FreePBX::Core()->getDID($settings['extension'],$settings['cidnum']);
+        $old = FreePBX::Core()->getDID($settings['extension'], $settings['cidnum']);
+
         if (!empty($old)) {
-            foreach ($old as $oldkey => $oldvar) {
-                if (!isset($settings[$oldkey])) {
-                    $settings[$oldkey] = $oldvar;
+            if (
+                isset($old['description']) &&
+                isset($old['destination']) &&
+                $old['description'] === $settings['description'] &&
+                $old['destination'] === $settings['destination']
+            ) {
+                $changed = false;
+                $res = $old;
+            } else {
+                foreach ($old as $oldkey => $oldvar) {
+                    if (!isset($settings[$oldkey])) {
+                        $settings[$oldkey] = $oldvar;
+                    }
+                }
+
+                FreePBX::Core()->delDID($settings['extension'], $settings['cidnum']);
+
+                if (FreePBX::Core()->addDID($settings)) {
+                    $res = FreePBX::Core()->getDID($settings['extension'], $settings['cidnum']);
+                } else {
+                    throw new Exception("Error creating DID");
                 }
             }
-            FreePBX::Core()->delDID($settings['extension'],$settings['cidnum']);
-        }
-        if (FreePBX::Core()->addDID($settings)) {
-            $res = FreePBX::Core()->getDID($settings['extension'],$settings['cidnum']);
         } else {
-            throw new Exception("Error creating DID");
+            if (FreePBX::Core()->addDID($settings)) {
+                $res = FreePBX::Core()->getDID($settings['extension'], $settings['cidnum']);
+            } else {
+                throw new Exception("Error creating DID");
+            }
         }
 
-        system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
+        if ($reload && $changed) {
+            system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
+        }
+
         return $response->withJson($res, 200);
-   } catch (Exception $e) {
-       error_log($e->getMessage());
-       $errors[] = $e->getMessage();
-       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
-   }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+        $errors[] = $e->getMessage();
+        return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+    }
 });
 
 $app->delete('/inboundroute', function (Request $request, Response $response, $args) {
@@ -417,6 +488,11 @@ $app->post('/customdest[/{destid}]', function (Request $request, Response $respo
         $params = $request->getParsedBody();
         $custom = \FreePBX::Customappsreg();
         $params['destret'] = "0";
+        $changed = true;
+        $reload = true;
+        if (isset($params['reload'])) {
+            $reload = in_array($params['reload'], array(true, 1, '1', 'true', 'True', 'yes', 'Yes'), true);
+        }
         if (empty($destid)) {
             $destid = $custom->getConfig("currentid");
             if (!$destid) {
@@ -426,10 +502,25 @@ $app->post('/customdest[/{destid}]', function (Request $request, Response $respo
             $custom->setConfig($destid, $params, "dests");
             $custom->setConfig("currentid", $destid+1);
         } else {
-            $params['destid'] = $destid;
-            $custom->setConfig($destid, $params, "dests");
+            // check if modified
+            $current = \FreePBX::Customappsreg()->getConfig($destid, "dests");
+            if (!empty($current)) {
+                if (
+                    $current['description'] === $params['description'] &&
+                    $current['target'] === $params['target']
+                ) {
+                    $changed = false;
+                }
+            }
+            if ($changed) {
+                $params['destid'] = $destid;
+                $custom->setConfig($destid, $params, "dests");
+            }
         }
-        system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
+        // Reload only if modified or new and reload is true
+        if ($reload && $changed) {
+            system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
+        }
         return $response->withJson(["destid" => $destid],200);
    } catch (Exception $e) {
        error_log($e->getMessage());
@@ -474,16 +565,39 @@ $app->post('/setcid[/{id}]', function (Request $request, Response $response, $ar
         $route = $request->getAttribute('route');
         $id = $route->getArgument('id');
         $params = $request->getParsedBody();
-
+        $changed = true;
+        $reload = true;
+        if (isset($params['reload'])) {
+            $reload = in_array($params['reload'], array(true, 1, '1', 'true', 'True', 'yes', 'Yes'), true);
+        }
         foreach (['description','cid_name','cid_num','destination'] as $p) {
             if (!isset($params[$p])) {
                 throw new Exception("Missing $p parameter");
             }
         }
         $id = !empty($id) ? $id : null;
-        \FreePBX::Setcid()->update($id,$params['description'],$params['cid_name'],$params['cid_num'],$params['destination']);
+        if ($id !== null) {
+            // Check if modified
+            $current = \FreePBX::Setcid()->get($id);
+            if (!empty($current)) {
+                if (
+                    $current['description'] === $params['description'] &&
+                    $current['cid_name'] === $params['cid_name'] &&
+                    $current['cid_num'] === $params['cid_num'] &&
+                    $current['destination'] === $params['destination']
+                ) {
+                    $changed = false;
+                }
+            }
+        }
 
-        system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
+        if ($changed) {
+            \FreePBX::Setcid()->update($id,$params['description'],$params['cid_name'],$params['cid_num'],$params['destination']);
+        }
+        // Reload only if modified or new and reload is true
+        if ($reload && $changed) {
+            system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
+        }
         return $response->withStatus(201);
    } catch (Exception $e) {
        error_log($e->getMessage());
