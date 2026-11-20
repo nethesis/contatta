@@ -47,23 +47,32 @@ function checkTableExists($table) {
 }
 
 function createExtension($extension,$secret,$context = 'webcall'){
+    $errors = []; $warnings = []; $infos = [];
     try {
         global $astman;
-        $errors = array(); $warnings = array(); $infos = array();
-
-        if (!ctype_digit($extension) || !is_string($context) || !is_string($secret)) {
-            throw new InvalidArgumentException('Expected a numeric extension, a context and a secret');
+        if (!ctype_digit($extension) || strlen($extension) > 20) {
+            throw new InvalidArgumentException('Expected a numeric extension of at most 20 digits');
         }
-        $res = checkFreeExtension($extension);
-        $infos = array_merge($infos,$res['infos']);
-        $warnings = array_merge($warnings,$res['warnings']);
-        $errors = array_merge($errors,$res['errors']);
-        if ($res['status'] === false) {
-            return array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings);
+        foreach (['context' => $context, 'secret' => $secret] as $field => $value) {
+            if (!is_string($value) || strlen($value) > 255 || strpbrk($value, "\r\n\0") !== false) {
+                throw new InvalidArgumentException("Invalid $field");
+            }
         }
-
         $fpbx = FreePBX::create();
         $dbh = FreePBX::Database();
+        // Keep concurrent creates and reloads from seeing a partially configured device.
+        $dbh->beginTransaction();
+        $device = $dbh->prepare('SELECT id FROM devices WHERE id = ? FOR UPDATE');
+        $device->execute([$extension]);
+        if ($device->fetchColumn() !== false) {
+            throw new RuntimeException("Extension $extension already in use");
+        }
+        $res = checkFreeExtension($extension);
+        if (!$res['status']) {
+            $dbh->rollBack();
+            return $res;
+        }
+        $available = true;
 
         // FreePBX 17 accepts these PJSIP settings during quick create.
         $data = [
@@ -78,13 +87,10 @@ function createExtension($extension,$secret,$context = 'webcall'){
             'media_use_received_transport' => 'yes',
             'media_encryption' => 'dtls',
         ];
-        // A concurrent reload must see the device only after its context and DTLS are ready.
-        $dbh->beginTransaction();
         $res = $fpbx->Core->processQuickCreate('pjsip', $extension, $data);
         if (!$res['status']) {
             throw new RuntimeException($res['message'] ?? 'Error creating extension');
         }
-        $created = true;
         //Set cid_masquerade (CID Num Alias)
         $astman->database_put("AMPUSER",$extension."/cidnum",$extension);
 
@@ -103,14 +109,17 @@ function createExtension($extension,$secret,$context = 'webcall'){
 
         return array('status' => true, 'errors'=> $errors, 'warnings' => $warnings, 'infos' => $infos, 'extension' => $extension, 'secret' => $secret, 'port' => '443', 'path' => '/ws');
     } catch (Throwable $e) {
-       try {
-           if (!empty($created)) {
-               // FreePBX also writes to AstDB, outside the SQL transaction.
-               $fpbx->Core->delUser($extension);
-               $fpbx->Core->delDevice($extension);
-           }
-       } finally {
-           if (isset($dbh) && $dbh->inTransaction()) {
+       if (isset($dbh) && $dbh->inTransaction()) {
+           try {
+               // Core inserts the device before writing AstDB, even if quick create later fails.
+               if (!empty($available)) {
+                   $device->execute([$extension]);
+                   if ($device->fetchColumn() !== false) {
+                       $fpbx->Core->delUser($extension);
+                       $fpbx->Core->delDevice($extension);
+                   }
+               }
+           } finally {
                $dbh->rollBack();
            }
        }
