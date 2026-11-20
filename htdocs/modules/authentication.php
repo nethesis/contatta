@@ -33,33 +33,30 @@ use \Psr\Http\Message\ResponseInterface as Response;
 */
 $app->get('/login', function (Request $request, Response $response) {
     /*Login success - set auth cookie*/
-    include_once(__DIR__.'/../../admin/libraries/ampuser.class.php');
+    require_once '/var/www/html/freepbx/admin/libraries/ampuser.class.php';
     session_start();
     if (!isset($_SESSION['AMP_user'])) {
         $_SESSION['AMP_user'] = new ampuser('admin');
     }
-    return $response->withJson(['success' => true]);
+    return jsonResponse($response, ['success' => true]);
 });
 
 $app->post('/testauth', function (Request $request, Response $response, $args) { 
     $params = $request->getParsedBody();
-    $username = $params['username'];
-    $password = $params['password'];
+    $username = $params['username'] ?? '';
+    $password = $params['password'] ?? '';
 
     if(!empty($username)) {
         // not logged in, and have provided a user/pass
-        include_once(__DIR__.'/../../admin/libraries/ampuser.class.php');
+        require_once '/var/www/html/freepbx/admin/libraries/ampuser.class.php';
         session_start();
         $_SESSION['AMP_user'] = new ampuser($username);
         if ($_SESSION['AMP_user']->checkPassword($password) && $_SESSION['AMP_user']->checkSection('*')) {
-            unset($no_auth);
-            require(__DIR__.'/../config.inc.php');
-            $secret = $config['settings']['secretkey'];
-            return $response->withJson(['result' => $secret], 200);
+            $secret = FreePBX::Contatta()->getConfig('secretkey');
+            return jsonResponse($response, ['result' => $secret], 200);
         }
     }
     unset($_SESSION['AMP_user']);
-    $no_auth = true;
     return $response->withStatus(401);
 });
 

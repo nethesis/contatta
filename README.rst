@@ -11,6 +11,8 @@ Questo repository contiene l'integrazione Contatta-NethServer, in particolare:
 Installazione
 ==============
 
+Il modulo richiede NethVoice 1.8.x con FreePBX 17. Per gli interni WebRTC, configurare sul virtual host di NethVoice la rotta HTTPS ``/ws`` verso il WebSocket SIP di Asterisk.
+
 Accedere all'istanza di NethVoice su NethServer 8 (istanza #1 nell'esempio)
 
     runagent -m nethvoice1
@@ -82,11 +84,15 @@ genera l'interno 405 nel contesto webcall e restituisce un json contenente event
     {
         "errors": [],
         "extension": "405",
+        "port": "443",
+        "path": "/ws",
         "infos": [],
         "secret": "08ulR13B3lETsbV",
         "status": true,
         "warnings": []
     }
+
+Il client usa l'host di NethVoice, la porta e il percorso restituiti per collegarsi a ``wss://<NETHVOICE_HOST>:443/ws`` con il sottoprotocollo ``sip``.
 
 NOTA: gli interni appartengono al contesto webcall e non possono chamare numeri deversi dagli agenti. Tuttavia se venissero modificati dall'interfaccia di FreePBX, il contesto verrebbe perso. Questi interni non vanno modificati dall'interfaccia di FreePBX ma solamente tramite le REST API
 

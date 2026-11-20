@@ -14,7 +14,7 @@
 		<contatta>Contatta</contatta>
 	</menuitems>
 	<depends>
-		<version>14.0.0</version>
+		<version>17.0.0</version>
 	</depends>
-	<supported>14.0.0</supported>
+	<supported>17.0.0</supported>
 </module>
