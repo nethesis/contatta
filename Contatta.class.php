@@ -62,7 +62,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
 	// This handles any data passed to this module before the page is rendered.
 	public function doConfigPageInit($page) {
 		//Handle form submissions
-		switch ($_REQUEST['action']) {
+		switch ($_REQUEST['action'] ?? '') {
 			case 'save':
 			foreach (['agiip','monitorexec','ami','amipassword'] as $keyword) {
 				$this->setConfig($keyword,$_REQUEST[$keyword]);
@@ -242,7 +242,7 @@ class Contatta extends \FreePBX_Helpers implements \BMO
             $charactersLength = strlen($characters);
             $randomString = '';
             for ($i = 0; $i < $length; $i++) {
-                $randomString .= $characters[rand(0, $charactersLength - 1)];
+                $randomString .= $characters[random_int(0, $charactersLength - 1)];
             }
             return $randomString;
         }

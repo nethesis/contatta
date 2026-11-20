@@ -20,35 +20,49 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-use \Psr\Http\Message\ServerRequestInterface as Request;
-use \Psr\Http\Message\ResponseInterface as Response;
+use Slim\Factory\AppFactory;
+use Slim\Middleware\MethodOverrideMiddleware;
 
-function contatta_handler($exception) {
-  header('Content-type: application/json');
-  echo json_encode(['error' => $exception->getMessage()]);
-  exit(0);
+set_exception_handler(function (Throwable $exception) {
+    error_log($exception->getMessage());
+    http_response_code(500);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Internal server error']);
+});
+
+$restRoot = '/var/www/html/freepbx/rest';
+$restLoader = require $restRoot . '/vendor/autoload.php';
+
+// Resolve the REST stack's PSR contracts before FreePBX registers its own versions.
+foreach (['Message', 'Request', 'ServerRequest', 'Response', 'Stream', 'Uri', 'UploadedFile'] as $contract) {
+    interface_exists('Psr\\Http\\Message\\' . $contract . 'Interface');
 }
+foreach (['Request', 'Response', 'ServerRequest', 'Stream', 'Uri', 'UploadedFile'] as $contract) {
+    interface_exists('Psr\\Http\\Message\\' . $contract . 'FactoryInterface');
+}
+interface_exists('Psr\\Http\\Server\\MiddlewareInterface');
+interface_exists('Psr\\Http\\Server\\RequestHandlerInterface');
 
-set_exception_handler('contatta_handler');
-
-require 'vendor/autoload.php';
-
-# Initialize FreePBX environment
 $bootstrap_settings['freepbx_error_handler'] = false;
-define('FREEPBX_IS_AUTH',1);
+define('FREEPBX_IS_AUTH', 1);
 require_once '/etc/freepbx.conf';
 
-# Load middleware classess
-require('lib/AuthMiddleware.php');
+$restLoader->unregister();
+$restLoader->register(true);
+require_once $restRoot . '/lib/JsonResponse.php';
+require_once __DIR__ . '/lib/AuthMiddleware.php';
 
-$app = new \Slim\App();
+$app = AppFactory::create();
+$app->setBasePath('/freepbx/contatta');
+$app->addRoutingMiddleware();
+$app->add(new MethodOverrideMiddleware());
+$app->addBodyParsingMiddleware();
+$app->add(new AuthMiddleware($app->getResponseFactory()));
+$errorMiddleware = $app->addErrorMiddleware(false, true, true);
+$errorMiddleware->getDefaultErrorHandler()->forceContentType('application/json');
 
-# Add authentication
-$app->add(new AuthMiddleware());
-
-foreach (glob("modules/*.php") as $filename)
-{
-    require($filename);
+foreach (glob(__DIR__ . '/modules/*.php') as $filename) {
+    require $filename;
 }
 
 $app->run();

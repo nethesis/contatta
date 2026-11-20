@@ -20,28 +20,24 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-class AuthMiddleware
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+
+class AuthMiddleware implements MiddlewareInterface
 {
-    /**
-     * Authentication middleware invokable class
-     *
-     * @param  \Psr\Http\Message\ServerRequestInterface $request  PSR7 request
-     * @param  \Psr\Http\Message\ResponseInterface      $response PSR7 response
-     * @param  callable                                 $next     Next middleware
-     *
-     * @return \Psr\Http\Message\ResponseInterface
-     */
-    public function __invoke($request, $response, $next)
+    public function __construct(private ResponseFactoryInterface $responseFactory)
     {
-        if ($request->isOptions()) {
-            $response = $next($request, $response);
+    }
+
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        $secret = FreePBX::Contatta()->getConfig('secretkey');
+        if (!is_string($secret) || $secret === '' || !hash_equals($secret, $request->getHeaderLine('Secretkey'))) {
+            return jsonResponse($this->responseFactory->createResponse(), ['error' => 'Forbidden: wrong secret key'], 403);
         }
-		$secret = FreePBX::Contatta()->getConfig('secretkey');
-        if (!$request->hasHeader('Secretkey') || ($request->hasHeader('Secretkey') && ($request->getHeaderLine('Secretkey') !== $secret))) {
-            return $response->withJson(['error' => 'Forbidden: wrong secret key'], 403);
-        } else {
-            $response = $next($request, $response);
-            return $response;
-        }
+        return $handler->handle($request);
     }
 }

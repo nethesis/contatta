@@ -25,7 +25,7 @@ function generateRandomPassword($length = 15) {
     $charactersLength = strlen($characters);
     $randomString = '';
     for ($i = 0; $i < $length; $i++) {
-        $randomString .= $characters[rand(0, $charactersLength - 1)];
+        $randomString .= $characters[random_int(0, $charactersLength - 1)];
     }
     return $randomString;
 }
@@ -51,6 +51,9 @@ function createExtension($extension,$secret,$context = 'webcall'){
         global $astman;
         $errors = array(); $warnings = array(); $infos = array();
 
+        if (!ctype_digit($extension) || !is_string($context) || !is_string($secret)) {
+            throw new InvalidArgumentException('Expected a numeric extension, a context and a secret');
+        }
         $res = checkFreeExtension($extension);
         $infos = array_merge($infos,$res['infos']);
         $warnings = array_merge($warnings,$res['warnings']);
@@ -62,54 +65,55 @@ function createExtension($extension,$secret,$context = 'webcall'){
         $fpbx = FreePBX::create();
         $dbh = FreePBX::Database();
 
-        //delete extension
-        $fpbx->core->delDevice($extension, true);
-        $fpbx->core->delUser($extension, true);
- 
-        //create physical extension
-        $data['name'] = 'extension_'.$extension;
+        // FreePBX 17 accepts these PJSIP settings during quick create.
+        $data = [
+            'name' => 'extension_'.$extension,
+            'outboundcid' => '',
+            'vm' => 'no',
+            'secret' => $secret,
+            'accountcode' => $extension,
+            'avpf' => 'yes',
+            'icesupport' => 'yes',
+            'rtcp_mux' => 'yes',
+            'media_use_received_transport' => 'yes',
+            'media_encryption' => 'dtls',
+        ];
+        // A concurrent reload must see the device only after its context and DTLS are ready.
+        $dbh->beginTransaction();
         $res = $fpbx->Core->processQuickCreate('pjsip', $extension, $data);
         if (!$res['status']) {
-            throw ("Error creating extension");
+            throw new RuntimeException($res['message'] ?? 'Error creating extension');
         }
+        $created = true;
         //Set cid_masquerade (CID Num Alias)
         $astman->database_put("AMPUSER",$extension."/cidnum",$extension);
 
         //Add device
         $astman->database_put("AMPUSER", $extension."/device", $extension);
 
-        //set accountcode = mainextension
-        contattaWriteSipTableData($extension,"accountcode",$extension);
+        $astman->database_del("CW", $extension);
 
-        //disable call waiting
-        $astman->database_del("CW",$extension);
+        // Quick create does not accept a custom context.
+        $sth = $dbh->prepare('REPLACE INTO sip (id, keyword, data) VALUES (?, "context", ?)');
+        $sth->execute([$extension, $context]);
+        $fpbx->Certman->addDTLSOptions($extension, [
+            'auto_generate_cert' => 1, 'verify' => 'fingerprint', 'setup' => 'actpass', 'rekey' => 0,
+        ]);
+        $dbh->commit();
 
-        // Overwrite sip password with the one provided
-        contattaWriteSipTableData($extension,"secret",$secret);
-
-        // Add extension to chosen context
-        contattaWriteSipTableData($extension,"context",$context);
-
-        // Configure wss transport
-        contattaWriteSipTableData($extension,"transport","0.0.0.0-wss");
-
-        // enable AVPF
-        contattaWriteSipTableData($extension,"avpf","yes");
-
-        // enable ICE support
-        contattaWriteSipTableData($extension,"icesupport","yes");
-
-        // enable RTCP mux
-        contattaWriteSipTableData($extension,"rtcp_mux","yes");
-
-        // Enable DTLS, DTLS verify, DTLS Setup
-        contattaWriteSipTableData($extension,"media_encryption","dtls");
-        $sql = "INSERT INTO `certman_mapping` (`id`, `cid`, `verify`, `setup`, `rekey`) VALUES (?,1,'no','actpass',0)";
-        $sth = $dbh->prepare($sql);
-        $res = $sth->execute(array($extension));
-
-        return array('status' => true, 'errors'=> $errors, 'warnings' => $warnings, 'infos' => $infos, 'extension' => $extension, 'secret' => $secret, 'port' => $_ENV['ASTERISK_WSS_PORT']);
-    } catch (Exception $e) {
+        return array('status' => true, 'errors'=> $errors, 'warnings' => $warnings, 'infos' => $infos, 'extension' => $extension, 'secret' => $secret, 'port' => '443', 'path' => '/ws');
+    } catch (Throwable $e) {
+       try {
+           if (!empty($created)) {
+               // FreePBX also writes to AstDB, outside the SQL transaction.
+               $fpbx->Core->delUser($extension);
+               $fpbx->Core->delDevice($extension);
+           }
+       } finally {
+           if (isset($dbh) && $dbh->inTransaction()) {
+               $dbh->rollBack();
+           }
+       }
        error_log($e->getMessage());
        $errors[] = $e->getMessage();
        return array('status' => false, 'errors'=> $errors, 'warnings' => $warnings, 'infos' => $infos);
@@ -118,10 +122,7 @@ function createExtension($extension,$secret,$context = 'webcall'){
 
 function deleteExtension($extension) {
     try {
-        global $astman;
         $errors = array(); $warnings = array(); $infos = array();
-        $dbh = FreePBX::Database();
-
         $res = checkFreeExtension($extension);
         if ($res['status'] === true) {
             $warnings[] = 'Extension doesn\'t exists';
@@ -132,10 +133,7 @@ function deleteExtension($extension) {
         $fpbx->Core->delUser($extension);
         $fpbx->Core->delDevice($extension);
 
-        // Delete cert configuration
-        $sql = "DELETE FROM `certman_mapping` WHERE `id` = ?";
-        $sth = $dbh->prepare($sql);
-        $res = $sth->execute(array($extension));
+        $fpbx->Certman->removeDTLSOptions($extension);
 
         return array('status' => true, 'errors'=> $errors, 'warnings' => $warnings, 'infos' => $infos);
     } catch (Exception $e) {
@@ -150,9 +148,11 @@ function checkFreeExtension($extension){
         $errors = array(); $warnings = array(); $infos = array();
         $dbh = \FreePBX::Database();
         //Check extensions
-        $sql = 'SELECT * FROM `sip` WHERE `id`= ?';
+        $sql = 'SELECT 1 FROM sip WHERE id = ?
+                UNION ALL SELECT 1 FROM devices WHERE id = ?
+                UNION ALL SELECT 1 FROM users WHERE extension = ? LIMIT 1';
         $sth = $dbh->prepare($sql);
-        $sth->execute(array($extension));
+        $sth->execute([$extension, $extension, $extension]);
         if($sth->fetch(\PDO::FETCH_ASSOC)) {
             $errors[] = "Extension $extension already in use";
             return array('status' => false, 'errors'=> $errors, 'warnings' => $warnings, 'infos' => $infos);
@@ -176,7 +176,7 @@ function checkFreeExtension($extension){
             return array('status' => false, 'errors'=> $errors, 'warnings' => $warnings, 'infos' => $infos);
         }
 
-        //check defaul feturecodes
+        //check default feature codes
         if (checkTableExists("featurecodes")){
             $sql = 'SELECT * FROM `featurecodes` WHERE `defaultcode` = ? AND `customcode` IS NULL';
             $sth = $dbh->prepare($sql);
@@ -222,15 +222,3 @@ function checkFreeExtension($extension){
         return array('status' => false, 'errors'=> $errors, 'warnings' => $warnings, 'infos' => $infos);
     }
 }
-
-function contattaWriteSipTableData($id,$keyword,$value){
-    $dbh = FreePBX::Database();
-    $sql = 'UPDATE `sip` SET `data`=? WHERE (`id`=? OR `id` LIKE ?) AND `keyword`=?';
-    $sth = $dbh->prepare($sql);
-    $res = $sth->execute(array($value,$id,"9%$id",$keyword));
-    if ($res === FALSE) {
-        return new Exception($sth->errorInfo()[2]);
-    }
-    return true;
-}
-

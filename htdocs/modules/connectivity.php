@@ -28,7 +28,7 @@ $app->get('/trunk', function (Request $request, Response $response, $args) {
         $trunks = FreePBX::Core()->listTrunks();
         $nethcti3 = FreePBX::Nethcti3();
 
-        $nethserverVersion = $request->getQueryParam('nsversion', '7');
+        $nethserverVersion = $request->getQueryParams()['nsversion'] ?? '7';
 
         foreach($trunks as $trunk) {
             // Get trunk username
@@ -65,19 +65,17 @@ $app->get('/trunk', function (Request $request, Response $response, $args) {
             }
             array_push($result, $trunk);
         }
-        return $response->withJson($result,200);
+        return jsonResponse($response, $result,200);
     }
     catch (Exception $e) {
       error_log($e->getMessage());
-      return $response->withJson('An error occurred', 500);
+      return jsonResponse($response, 'An error occurred', 500);
     }
 });
 
 $app->post('/trunk[/{trunkid}]', function (Request $request, Response $response, $args) {
     try {
-        $route = $request->getAttribute('route');
-        $name = $route->getArgument('name');
-        $trunkid = $route->getArgument('trunkid');
+        $trunkid = $args['trunkid'] ?? null;
         $params = $request->getParsedBody();
 
         $dbh = FreePBX::Database();
@@ -238,20 +236,18 @@ $app->post('/trunk[/{trunkid}]', function (Request $request, Response $response,
         }
 
         system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
-        return $response->withJson(["trunkid" => $trunkid], 200);
+        return jsonResponse($response, ["trunkid" => $trunkid], 200);
    } catch (Exception $e) {
        error_log($e->getMessage());
-       $errors[] = $e->getMessage();
-       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+       return jsonResponse($response, ['status' => false, 'errors' => [$e->getMessage()], 'infos' => [], 'warnings' => []], 500);
    }
 });
 
 $app->post('/trunk/{trunkid}/disabled/{disabled:on|off}', function (Request $request, Response $response, $args) {
     try {
-        $route = $request->getAttribute('route');
         $params = $request->getParsedBody();
-        $trunkid = $route->getArgument('trunkid');
-        $disabled = $route->getArgument('disabled');
+        $trunkid = $args['trunkid'];
+        $disabled = $args['disabled'];
 
         $dbh = FreePBX::Database();
 	$sql = "UPDATE `trunks` SET `disabled` = ? WHERE `trunkid` = ?";
@@ -264,15 +260,13 @@ $app->post('/trunk/{trunkid}/disabled/{disabled:on|off}', function (Request $req
         return $response->withStatus(204);
    } catch (Exception $e) {
        error_log($e->getMessage());
-       $errors[] = $e->getMessage();
-       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+       return jsonResponse($response, ['status' => false, 'errors' => [$e->getMessage()], 'infos' => [], 'warnings' => []], 500);
    }
 });
 
 $app->delete('/trunk/{trunkid}', function (Request $request, Response $response, $args) {
     try {
-        $route = $request->getAttribute('route');
-        $trunkid = $route->getArgument('trunkid');
+        $trunkid = $args['trunkid'];
         $dbh = FreePBX::Database();
 
         $sql = "DELETE IGNORE FROM `trunks` WHERE `trunkid` = ?";
@@ -287,24 +281,22 @@ $app->delete('/trunk/{trunkid}', function (Request $request, Response $response,
         return $response->withStatus(204);
     } catch (Exception $e) {
        error_log($e->getMessage());
-       $errors[] = $e->getMessage();
-       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+       return jsonResponse($response, ['status' => false, 'errors' => [$e->getMessage()], 'infos' => [], 'warnings' => []], 500);
     }
 });
 
 $app->get('/inboundroute', function (Request $request, Response $response, $args) {
     try {
       $routes = FreePBX::Core()->getAllDIDs('extension');
-      return $response->withJson($routes, 200);
+      return jsonResponse($response, $routes, 200);
     } catch (Exception $e) {
       error_log($e->getMessage());
-      return $response->withJson('An error occurred', 500);
+      return jsonResponse($response, 'An error occurred', 500);
     }
 });
 
 $app->post('/inboundroute', function (Request $request, Response $response, $args) {
     try {
-        $route = $request->getAttribute('route');
         $settings = $request->getParsedBody();
         $dbh = FreePBX::Database();
 
@@ -361,11 +353,10 @@ $app->post('/inboundroute', function (Request $request, Response $response, $arg
             system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         }
 
-        return $response->withJson($res, 200);
+        return jsonResponse($response, $res, 200);
     } catch (Exception $e) {
         error_log($e->getMessage());
-        $errors[] = $e->getMessage();
-        return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+        return jsonResponse($response, ['status' => false, 'errors' => [$e->getMessage()], 'infos' => [], 'warnings' => []], 500);
     }
 });
 
@@ -379,8 +370,7 @@ $app->delete('/inboundroute', function (Request $request, Response $response, $a
         return $response->withStatus(204);
     } catch (Exception $e) {
        error_log($e->getMessage());
-       $errors[] = $e->getMessage();
-       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+       return jsonResponse($response, ['status' => false, 'errors' => [$e->getMessage()], 'infos' => [], 'warnings' => []], 500);
     }
 });
 
@@ -400,21 +390,18 @@ $app->get('/outboundroute', function (Request $request, Response $response, $arg
             $route['patterns'] = FreePBX::Core()->getRoutePatternsByID($route['route_id']);
             $routes[] = $route;
         }
-        return $response->withJson($routes, 200);
+        return jsonResponse($response, $routes, 200);
     } catch (Exception $e) {
         error_log($e->getMessage());
-        $errors[] = $e->getMessage();
-        return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+        return jsonResponse($response, ['status' => false, 'errors' => [$e->getMessage()], 'infos' => [], 'warnings' => []], 500);
     }
 });
 
 $app->post('/outboundroute[/{route_id}]', function (Request $request, Response $response, $args) {
     try {
         include_once '/var/www/html/freepbx/admin/modules/core/functions.inc.php';
-        $route = $request->getAttribute('route');
-        $route_id = $route->getArgument('route_id');
-        $params = $request->getParsedBody();
-        $dbh = FreePBX::Database();
+        $route_id = $args['route_id'] ?? null;
+        $params = $request->getParsedBody() ?? [];
 
         if (isset($route_id)) {
             // Route exists. Get its parameter as defaults and delete it
@@ -445,46 +432,42 @@ $app->post('/outboundroute[/{route_id}]', function (Request $request, Response $
         $parameters = [];
         foreach ($parameters_list as $p) {
             if (array_key_exists($p,$params)) {
-                $parameters[$p] = $params[$p];
+                $parameters[] = $params[$p];
             } elseif (array_key_exists($p,$default_params)) {
-                $parameters[$p] = $default_params[$p];
+                $parameters[] = $default_params[$p];
             } else {
                 throw new Exception("Missing $p parameter");
             }
         }
         if (isset($route_id)) {
-            call_user_func_array('core_routing_editbyid',['route_id'=>$route_id]+$parameters);
+            core_routing_editbyid($route_id, ...$parameters);
         } else {
-            $route_id = call_user_func_array('core_routing_addbyid',$parameters);
+            $route_id = core_routing_addbyid(...$parameters);
         }
         system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
-        return $response->withJson(["route_id" => $route_id],200);
+        return jsonResponse($response, ["route_id" => $route_id],200);
    } catch (Exception $e) {
        error_log($e->getMessage());
-       $errors[] = $e->getMessage();
-       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+       return jsonResponse($response, ['status' => false, 'errors' => [$e->getMessage()], 'infos' => [], 'warnings' => []], 500);
    }
 });
 
 $app->delete('/outboundroute/{route_id}', function (Request $request, Response $response, $args) {
     try {
         include_once '/var/www/html/freepbx/admin/modules/core/functions.inc.php';
-        $route = $request->getAttribute('route');
-        $route_id = $route->getArgument('route_id');
+        $route_id = $args['route_id'];
         core_routing_delbyid($route_id);
         system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         return $response->withStatus(204);
     } catch (Exception $e) {
        error_log($e->getMessage());
-       $errors[] = $e->getMessage();
-       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+       return jsonResponse($response, ['status' => false, 'errors' => [$e->getMessage()], 'infos' => [], 'warnings' => []], 500);
     }
 });
 
 $app->post('/customdest[/{destid}]', function (Request $request, Response $response, $args) {
     try {
-        $route = $request->getAttribute('route');
-        $destid = $route->getArgument('destid');
+        $destid = $args['destid'] ?? null;
         $params = $request->getParsedBody();
         $custom = \FreePBX::Customappsreg();
         $params['destret'] = "0";
@@ -521,49 +504,43 @@ $app->post('/customdest[/{destid}]', function (Request $request, Response $respo
         if ($reload && $changed) {
             system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         }
-        return $response->withJson(["destid" => $destid],200);
+        return jsonResponse($response, ["destid" => $destid],200);
    } catch (Exception $e) {
        error_log($e->getMessage());
-       $errors[] = $e->getMessage();
-       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+       return jsonResponse($response, ['status' => false, 'errors' => [$e->getMessage()], 'infos' => [], 'warnings' => []], 500);
    }
 });
 
 $app->delete('/customdest/{destid}', function (Request $request, Response $response, $args) {
     try {
-        $route = $request->getAttribute('route');
-        $destid = $route->getArgument('destid');
+        $destid = $args['destid'];
         $custom = \FreePBX::Customappsreg();
         $custom->setConfig($destid, false, "dests");
         system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         return $response->withStatus(204);
    } catch (Exception $e) {
        error_log($e->getMessage());
-       $errors[] = $e->getMessage();
-       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+       return jsonResponse($response, ['status' => false, 'errors' => [$e->getMessage()], 'infos' => [], 'warnings' => []], 500);
    }
 });
 
 $app->get('/customdest[/{destid}]', function (Request $request, Response $response, $args) {
     try {
-        $route = $request->getAttribute('route');
-        $destid = $route->getArgument('destid');
+        $destid = $args['destid'] ?? null;
         if (empty($destid)) {
-            return $response->withJson(\FreePBX::Customappsreg()->getAllCustomDests(),200);
+            return jsonResponse($response, \FreePBX::Customappsreg()->getAllCustomDests(),200);
         } else {
-            return $response->withJson(\FreePBX::Customappsreg()->getConfig($destid, "dests"),200);
+            return jsonResponse($response, \FreePBX::Customappsreg()->getConfig($destid, "dests"),200);
         }
    } catch (Exception $e) {
        error_log($e->getMessage());
-       $errors[] = $e->getMessage();
-       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+       return jsonResponse($response, ['status' => false, 'errors' => [$e->getMessage()], 'infos' => [], 'warnings' => []], 500);
    }
 });
 
 $app->post('/setcid[/{id}]', function (Request $request, Response $response, $args) {
     try {
-        $route = $request->getAttribute('route');
-        $id = $route->getArgument('id');
+        $id = $args['id'] ?? null;
         $params = $request->getParsedBody();
         $changed = true;
         $reload = true;
@@ -601,46 +578,41 @@ $app->post('/setcid[/{id}]', function (Request $request, Response $response, $ar
         return $response->withStatus(201);
    } catch (Exception $e) {
        error_log($e->getMessage());
-       $errors[] = $e->getMessage();
-       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+       return jsonResponse($response, ['status' => false, 'errors' => [$e->getMessage()], 'infos' => [], 'warnings' => []], 500);
    }
 });
 
 $app->delete('/setcid/{id}', function (Request $request, Response $response, $args) {
     try {
-        $route = $request->getAttribute('route');
-        $id = $route->getArgument('id');
+        $id = $args['id'];
         \FreePBX::Setcid()->delete($id);
         system('/var/www/html/freepbx/rest/lib/retrieveHelper.sh > /dev/null &');
         return $response->withStatus(204);
    } catch (Exception $e) {
        error_log($e->getMessage());
-       $errors[] = $e->getMessage();
-       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+       return jsonResponse($response, ['status' => false, 'errors' => [$e->getMessage()], 'infos' => [], 'warnings' => []], 500);
    }
 });
 
 $app->get('/setcid[/{id}]', function (Request $request, Response $response, $args) {
 try {
-        $route = $request->getAttribute('route');
-        $id = $route->getArgument('id');
+        $id = $args['id'] ?? null;
         if (!empty($id)) {
-            return $response->withJson(\FreePBX::Setcid()->get($id),200);
+            return jsonResponse($response, \FreePBX::Setcid()->get($id),200);
         } else {
-            return $response->withJson(\FreePBX::Setcid()->getAll(),200);
+            return jsonResponse($response, \FreePBX::Setcid()->getAll(),200);
         }
    } catch (Exception $e) {
        error_log($e->getMessage());
-       $errors[] = $e->getMessage();
-       return $response->withJson(array('status' => false, 'errors' => $errors, 'infos' => $infos, 'warnings' => $warnings), 500);
+       return jsonResponse($response, ['status' => false, 'errors' => [$e->getMessage()], 'infos' => [], 'warnings' => []], 500);
    }
 });
 
 $app->get('/predictive', function (Request $request, Response $response, $args) {
 try {
         // Controllo se è un test
-	if ($_GET['test'] == 'Y'){
-            return $response->withJson('Ok', 200);
+	if (($_GET['test'] ?? '') === 'Y'){
+            return jsonResponse($response, 'Ok', 200);
         }
 
 	$channel =  $_GET['channel'];
@@ -682,10 +654,10 @@ try {
 	fwrite($file, $chiamata);
 	fclose($file);
 
-        return $response->withJson($result, 200);
+        return jsonResponse($response, $result, 200);
 
     } catch (Exception $e) {
       error_log($e->getMessage());
-      return $response->withJson('An error occurred', 500);
+      return jsonResponse($response, 'An error occurred', 500);
     }
 });
